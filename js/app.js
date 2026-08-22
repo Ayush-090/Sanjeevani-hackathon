@@ -430,10 +430,12 @@ function renderChatFeedMessages() {
 
   feed.innerHTML = messages.map(msg => {
     if (msg.sender === 'user') {
+      const isVoice = msg.isVoiceInput;
       return `
         <div class="wa-bubble-wrap-user">
           <div class="wa-bubble-user">
-            ${msg.text}
+            ${isVoice ? '<div style="display: flex; align-items: center; gap: 4px; font-weight: 800; color: #065f46; font-size: 11.5px; margin-bottom: 3px;">🎙️ You (Voice Input):</div>' : ''}
+            <div>${msg.text}</div>
           </div>
           <div class="wa-bubble-meta">
             <span>${msg.timestamp}</span>
@@ -464,7 +466,7 @@ function renderChatFeedMessages() {
             <!-- Quick Action Suggestion Chips -->
             ${msg.showQuickChips && msg.chips ? `
               <div style="margin-top: 12px;">
-                <div style="font-size: 12px; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px;">What would you like help with?</div>
+                <div style="font-size: 12px; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px;">Suggested Questions:</div>
                 <div class="wa-quick-actions-bar">
                   ${msg.chips.map(c => `<button class="wa-chip-btn" onclick="handleQuickChipClick('${c}')">${c}</button>`).join('')}
                 </div>
@@ -473,36 +475,77 @@ function renderChatFeedMessages() {
 
             <!-- Embedded Government Scheme Cards in Chat -->
             ${msg.matchedSchemes && msg.matchedSchemes.length > 0 ? `
-              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
-                ${msg.matchedSchemes.map(sch => `
+              <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
+                ${msg.matchedSchemes.map(sch => {
+                  let statusBadge = '<span class="match-pill match-pill-yellow">🟡 Potentially Relevant</span>';
+                  if (sch.eligibility_status === 'likely_match') {
+                    statusBadge = '<span class="match-pill match-pill-green">🟢 Likely Match</span>';
+                  } else if (sch.eligibility_status === 'more_info_required') {
+                    statusBadge = '<span class="match-pill match-pill-gray">⚪ More Information Required</span>';
+                  }
+                  
+                  return `
                   <div class="wa-scheme-card-embed">
                     <div class="wa-scheme-embed-header">
                       <div>
-                        <span class="badge badge-active">🏛️ Government Scheme</span>
-                        <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 4px;">${sch.name}</h4>
+                        <span class="badge badge-active">🏛️ ${sch.level || 'Central/State'} Scheme</span>
+                        <h4 style="font-size: 15.5px; font-weight: 800; color: var(--text-main); margin-top: 5px;">${sch.name}</h4>
                       </div>
-                      <span class="match-pill">${sch.matchScore}% Match</span>
+                      ${statusBadge}
                     </div>
 
-                    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                      ${sch.shortSummary}
+                    <!-- Why it may match -->
+                    <div style="font-size: 12.5px; color: var(--primary-900); background: #ecfdf5; border-left: 3px solid var(--primary-600); padding: 6px 10px; border-radius: 4px; margin: 8px 0;">
+                      <strong>Why it may match:</strong> ${sch.why_relevant || 'Healthcare criteria match based on resident profile.'}
                     </div>
 
-                    <div style="background: var(--primary-50); padding: 8px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 800; color: var(--primary-900); margin-bottom: 10px;">
-                      Benefit: ${sch.benefits[0]}
+                    <!-- Benefits -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border-subtle); padding: 8px 12px; border-radius: 6px; font-size: 12.5px; color: var(--text-main); margin-bottom: 8px;">
+                      <strong>🎁 Benefits:</strong> ${sch.benefits}
                     </div>
 
+                    <!-- Eligibility & Documents -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 10px;">
+                      <div style="background: #fff; border: 1px solid var(--border-subtle); padding: 6px 10px; border-radius: 6px;">
+                        <span style="font-weight: 700; color: var(--text-secondary);">📋 Eligibility:</span><br>
+                        <span style="color: var(--text-main);">${sch.eligibility}</span>
+                      </div>
+                      <div style="background: #fff; border: 1px solid var(--border-subtle); padding: 6px 10px; border-radius: 6px;">
+                        <span style="font-weight: 700; color: var(--text-secondary);">📄 Documents:</span><br>
+                        <span style="color: var(--text-main);">${sch.documents}</span>
+                      </div>
+                    </div>
+
+                    <!-- Action Plan (What to do next) -->
+                    ${sch.action_plan ? `
+                      <div style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 10px;">
+                        <div style="font-weight: 800; color: #0369a1; margin-bottom: 4px;">👉 What to do next:</div>
+                        <div style="color: #0c4a6e; line-height: 1.4;">
+                          ${Array.isArray(sch.action_plan) ? sch.action_plan.map(step => `<div>• ${step}</div>`).join('') : sch.action_plan}
+                        </div>
+                      </div>
+                    ` : ''}
+
+                    <!-- Footer: Official Source & Actions -->
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 10px; gap: 8px; flex-wrap: wrap;">
-                      <span style="font-size: 11px; color: var(--text-muted);">Source: ${sch.officialSource}</span>
+                      <div>
+                        ${sch.official_source_url ? `
+                          <a href="${sch.official_source_url}" target="_blank" rel="noopener noreferrer" class="btn-source-link" style="color: var(--primary-700); font-weight: 700; font-size: 12px; text-decoration: underline;">
+                            🏛️ Official Source ↗
+                          </a>
+                        ` : `
+                          <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">⚠️ Source verification required</span>
+                        `}
+                      </div>
                       <div style="display: flex; gap: 6px;">
-                        <button class="btn btn-secondary btn-sm" onclick="openSchemeModal('${sch.id}')">View Details →</button>
-                        <button class="btn-speak-listen" onclick="triggerSpeakMessage('${msg.id}', '${sch.name}. ${sch.shortSummary}')">
+                        <button class="btn-speak-listen" onclick="triggerSpeakMessage('${msg.id}', '${sch.name.replace(/'/g, "\\'")}. ${sch.benefits.replace(/'/g, "\\'")}')">
                           <span>🔊 Listen</span>
                         </button>
                       </div>
                     </div>
                   </div>
-                `).join('')}
+                  `;
+                }).join('')}
               </div>
             ` : ''}
 
@@ -525,6 +568,12 @@ function renderChatFeedMessages() {
   }).join('');
 
   feed.scrollTop = feed.scrollHeight;
+  requestAnimationFrame(() => {
+    feed.scrollTop = feed.scrollHeight;
+  });
+  setTimeout(() => {
+    if (feed) feed.scrollTop = feed.scrollHeight;
+  }, 80);
 }
 
 /* ==========================================================================
@@ -614,7 +663,7 @@ function confirmSendVoiceRecording() {
     return;
   }
   cancelVoiceRecording();
-  sendUserChatMessage(text.trim(), true); // true = speak answer aloud
+  sendUserChatMessage(text.trim(), true, true); // true = speak answer aloud, true = isVoiceInput
 }
 
 /* ==========================================================================
@@ -648,9 +697,24 @@ function startVoiceConversationLoop() {
     window.aiAssistant.recognition.start();
 
     window.aiAssistant.recognition.onresult = async (event) => {
-      const transcript = Array.from(event.results).map(r => r[0].transcript).join('').trim();
-      if (!transcript) return;
+      let interimTranscript = '';
+      let finalTranscript = '';
 
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      if (interimTranscript && statusEl) {
+        statusEl.textContent = `“${interimTranscript}”`;
+      }
+
+      if (!finalTranscript.trim()) return;
+
+      const transcript = finalTranscript.trim();
       console.log("1 VOICE TRANSCRIPT (Voice Mode):", transcript);
       if (statusEl) statusEl.textContent = `“${transcript}”`;
 
@@ -663,7 +727,9 @@ function startVoiceConversationLoop() {
       const aiResponse = await window.aiAssistant.processQuery(
         transcript,
         window.appState.userProfile,
-        window.appState.schemes
+        window.appState.schemes,
+        null,
+        true
       );
 
       console.log("3 API RESPONSE (Voice Mode):", aiResponse);
@@ -674,13 +740,13 @@ function startVoiceConversationLoop() {
       if (statusEl) statusEl.textContent = 'Speaking...';
       const cleanSpeakText = aiResponse && aiResponse.text ? aiResponse.text : 'Main aapki sahayata ke liye tayar hoon.';
 
-      // Speak real dynamic answer
+      // Speak real dynamic answer in user's language
       window.aiAssistant.speakText(cleanSpeakText, 'voice-modal-msg', (isSpeaking) => {
         if (!isSpeaking) {
           if (statusEl) statusEl.textContent = 'Listening... (Speak your next question anytime)';
           try { window.aiAssistant.recognition.start(); } catch(e) {}
         }
-      });
+      }, aiResponse ? aiResponse.responseLanguage : 'hi-IN');
     };
 
     window.aiAssistant.recognition.onerror = (e) => {
@@ -726,8 +792,12 @@ function saveSarvamSettings() {
 /* ==========================================================================
    Audio Text-to-Speech (🔊 Listen Playback)
    ========================================================================== */
-function triggerSpeakMessage(msgId, text) {
+function triggerSpeakMessage(msgId, text, langCode = null) {
   const btn = document.getElementById(`btn-listen-${msgId}`);
+  const activeThread = window.aiAssistant.threads.find(t => t.id === window.aiAssistant.activeThreadId);
+  const msgObj = activeThread ? activeThread.messages.find(m => m.id === msgId) : null;
+  const targetLang = langCode || (msgObj ? msgObj.responseLanguage : 'hi-IN');
+
   window.aiAssistant.speakText(text, msgId, (isSpeaking) => {
     if (btn) {
       if (isSpeaking) {
@@ -738,7 +808,7 @@ function triggerSpeakMessage(msgId, text) {
         btn.innerHTML = '<span>🔊 Listen</span>';
       }
     }
-  });
+  }, targetLang);
 }
 
 function copyMessageText(text) {
@@ -764,7 +834,7 @@ function handleQuickChipClick(chipText) {
   sendUserChatMessage(chipText);
 }
 
-async function sendUserChatMessage(customText = null, speakAloud = false) {
+async function sendUserChatMessage(customText = null, speakAloud = false, isVoiceInput = false) {
   const inputEl = document.getElementById('wa-main-chat-input');
   const text = customText || (inputEl ? inputEl.value : '');
   if (!text.trim()) return;
@@ -784,7 +854,8 @@ async function sendUserChatMessage(customText = null, speakAloud = false) {
     (stepText) => {
       const stepEl = document.getElementById('wa-thinking-step-text');
       if (stepEl) stepEl.textContent = stepText;
-    }
+    },
+    isVoiceInput
   );
 
   console.log("3 API RESPONSE:", aiResponse);

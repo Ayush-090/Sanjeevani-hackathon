@@ -46,16 +46,15 @@ class SanjeevaniAIAssistant {
         id: 'msg-welcome-' + Date.now(),
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: `**Namaste! 👋**\n\nMain Sanjeevani AI hoon (Powered by Sarvam AI 105B). Aapke health profile ke basis par main healthcare information aur relevant government health schemes find karne mein help kar sakta hoon.\n\nAap Hindi, English ya Hinglish mein bol kar ya type karke baat kar sakte hain.`,
+        text: `**Namaste! 👋**\n\nMain Sanjeevani AI hoon (Powered by Sarvam AI 105B & Supabase 3,400+ Schemes Knowledge Base). Aapke health profile ke basis par main verified government healthcare schemes find karne aur healthcare information provide karne mein help karta hoon.\n\nAap Hindi, English, Hinglish ya Punjabi mein bol kar (🎙️) ya type karke pooch sakte hain.`,
         showContextCard: true,
         showQuickChips: true,
         chips: [
-          "🔍 Find schemes for me",
-          "✅ Check my eligibility",
-          "🆕 New government schemes",
-          "🔄 Recently updated schemes",
-          "📄 Required documents",
-          "🏥 Healthcare support"
+          "💬 Mere liye kaunsi scheme hai?",
+          "📄 Documents kya chahiye?",
+          "👉 Mujhe ab kya karna chahiye?",
+          "🇮🇳 Hindi mein samjhao",
+          "🔍 Check my eligibility"
         ]
       });
     }
@@ -166,7 +165,7 @@ class SanjeevaniAIAssistant {
   /* ==========================================================================
      Speech Synthesis (Text-to-Speech / 🔊 Listen Button)
      ========================================================================== */
-  speakText(text, msgId, onEndCallback) {
+  speakText(text, msgId, onEndCallback, langCode = 'hi-IN') {
     if (!this.speechSynthesis) {
       alert('Speech synthesis is not supported in this browser.');
       return;
@@ -184,10 +183,20 @@ class SanjeevaniAIAssistant {
     // Clean markdown symbols for natural speech
     const cleanText = text.replace(/[*#_`>✓🏛️🟢🟡🔵⚠️]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = langCode || 'hi-IN';
     
     const voices = this.speechSynthesis.getVoices();
-    const hindiVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN'));
-    if (hindiVoice) utterance.voice = hindiVoice;
+    let selectedVoice = null;
+
+    if (langCode.includes('pa')) {
+      selectedVoice = voices.find(v => v.lang.includes('pa') || v.lang.includes('IN'));
+    } else if (langCode.includes('en')) {
+      selectedVoice = voices.find(v => v.lang.includes('en-IN') || v.lang.includes('en-GB') || v.lang.includes('en'));
+    } else {
+      selectedVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN'));
+    }
+
+    if (selectedVoice) utterance.voice = selectedVoice;
     utterance.rate = 0.95;
 
     this.currentlySpeakingMsgId = msgId;
@@ -216,20 +225,20 @@ class SanjeevaniAIAssistant {
   /* ==========================================================================
      Browser Web Speech Recognition Fallback
      ========================================================================== */
-  initSpeechRecognition() {
+  initSpeechRecognition(lang = 'hi-IN') {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = false;
       this.recognition.interimResults = true;
-      this.recognition.lang = 'hi-IN';
+      this.recognition.lang = lang || 'hi-IN';
     }
   }
 
   /* ==========================================================================
      Live Sarvam AI Chat API Call (`POST /api/chat`)
      ========================================================================== */
-  async processQuery(userInput, userProfile, schemesDatabase, onProgressUpdate) {
+  async processQuery(userInput, userProfile, schemesDatabase, onProgressUpdate, isVoiceInput = false) {
     const trimmed = userInput.trim();
     if (!trimmed) return null;
 
@@ -244,16 +253,23 @@ class SanjeevaniAIAssistant {
     const userMessage = {
       id: 'msg-u-' + Date.now(),
       sender: 'user',
+      isVoiceInput: isVoiceInput,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       text: trimmed
     };
     thread.messages.push(userMessage);
 
     if (onProgressUpdate) {
-      onProgressUpdate("Sanjeevani AI is thinking...", 50);
+      onProgressUpdate("🔎 Checking Sanjeevani scheme database...", 30);
     }
 
     try {
+      if (onProgressUpdate) {
+        setTimeout(() => {
+          onProgressUpdate("🤖 Preparing your grounded answer...", 75);
+        }, 500);
+      }
+
       // Call Server-Side Sarvam AI API route
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -278,7 +294,8 @@ class SanjeevaniAIAssistant {
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text: data.answer || "Main aapki sahayata ke liye tayar hoon. Please apna sawal poochein.",
-        matchedSchemes: data.schemes || []
+        matchedSchemes: data.schemes || [],
+        responseLanguage: data.responseLanguage || 'hi-IN'
       };
 
       thread.messages.push(aiResponse);
@@ -292,7 +309,8 @@ class SanjeevaniAIAssistant {
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text: "Sorry, abhi Sanjeevani AI se response nahi mil pa raha. Please try again.",
-        matchedSchemes: []
+        matchedSchemes: [],
+        responseLanguage: 'hi-IN'
       };
 
       thread.messages.push(fallbackResponse);
