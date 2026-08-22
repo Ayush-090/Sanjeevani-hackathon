@@ -31,7 +31,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Serve static frontend files
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname)));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 /**
  * Intelligent Server-Side Scheme Search from Supabase (3,400+ Records)
