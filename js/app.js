@@ -1,375 +1,902 @@
 /**
- * Sanjeevani — Application Logic & Controller
- * Orchestrates navigation, reactive filtering, profile re-matching, OCR simulation,
- * application tracking, multilingual support, and admin workflows.
+ * Sanjeevani — Master Application Controller
+ * Handles WhatsApp-Style Voice Chat Assistant, Sarvam AI Speech-to-Text Integration,
+ * Web Audio Recording, Multi-Thread History, Role-Based Dashboards, and Scheme Discovery.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize State
+  // Initialize Global App State
   window.appState = {
-    currentScreen: 'home',
-    currentLanguage: 'en',
-    activeTab: 'for-you',
-    searchQuery: '',
-    filterState: 'all',
-    filterIncome: 'all',
-    filterCondition: 'all',
-    filterGovLevel: 'all',
-    filterStatus: 'all',
-    sortBy: 'match',
-    userProfile: { ...SANJEEVANI_DATA.currentUser },
+    currentScreen: 'landing', // 'landing' | 'patient-dashboard' | 'doctor-dashboard'
+    patientSubTab: 'overview',
+    doctorSubTab: 'overview',
+    currentLanguage: 'hi',
+    discoveryStep: 1,
+    selectedDoctorForConsent: null,
+    selectedPatientForDoctorView: null,
+    isVoiceRecording: false,
+    recordedTranscriptionText: '',
+    isMasterAudioOn: true,
     schemes: [...SANJEEVANI_DATA.schemes],
-    documents: [...SANJEEVANI_DATA.userDocuments],
-    applications: [...SANJEEVANI_DATA.applications],
+    medicalRecords: [...SANJEEVANI_DATA.medicalRecords],
+    doctors: [...SANJEEVANI_DATA.doctors],
+    activeConsents: [...SANJEEVANI_DATA.activeConsents],
+    userProfile: { ...SANJEEVANI_DATA.currentUser },
     intelligence: [...SANJEEVANI_DATA.intelligenceUpdates],
-    adminRecords: [...SANJEEVANI_DATA.adminSchemeRecords],
-    selectedSchemeForModal: null,
-    isMobileSimulator: false
+    applications: [...SANJEEVANI_DATA.applications],
+    doctorPatients: [
+      {
+        id: 'pat-ayush-090',
+        name: 'Ayush Bhardwaj',
+        age: 58,
+        gender: 'Male',
+        state: 'Punjab',
+        district: 'Ludhiana',
+        lastConsultation: '02 Aug 2026',
+        diagnosis: 'Type 2 Diabetes, Hypertension, Cardiac Review',
+        sharedRecords: ['Comprehensive Metabolic Panel', 'ECG Diagnostic Scan', 'Cardiology Prescription'],
+        accessExpires: '29 Aug 2026 (7 Days Active)',
+        status: 'Connected'
+      }
+    ],
+    doctorRequests: [
+      {
+        id: 'req-01',
+        patientName: 'Ayush Bhardwaj',
+        requestedRecords: 'Previous 2025 Blood Tests & Cardiology History',
+        reason: 'Required for annual chronic disease review',
+        status: 'Pending Patient Approval',
+        date: '21 Aug 2026'
+      }
+    ]
   };
 
-  // Initialize AI Assistant
+  // Initialize AI Engine
   window.aiAssistant = new SanjeevaniAIAssistant();
 
-  // Initial Boot
+  // Check Auth State on Boot
+  checkAuthAndRoute();
   recalculateMatchScores();
-  renderSummaryMetrics();
-  renderSchemesGrid();
-  renderIntelligenceTimeline();
-  renderDocumentsGrid();
-  renderApplicationsList();
-  renderAdminTable();
   setupEventListeners();
-  populateProfileForm();
 });
 
 /* ==========================================================================
-   Navigation & Screen Controller
+   Supabase Auth State & Routing
    ========================================================================== */
-function switchScreen(screenId) {
-  window.appState.currentScreen = screenId;
+function checkAuthAndRoute() {
+  if (window.sanjeevaniAuth && window.sanjeevaniAuth.isAuthenticated()) {
+    const role = window.sanjeevaniAuth.getUserRole();
+    if (role === 'doctor') {
+      routeToDoctorDashboard();
+    } else {
+      routeToPatientDashboard();
+    }
+  } else {
+    routeToLandingPage();
+  }
+}
 
-  // Update nav links
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.toggle('active', link.dataset.screen === screenId);
-  });
+function routeToLandingPage() {
+  window.appState.currentScreen = 'landing';
+  hideAllScreens();
+  const el = document.getElementById('screen-landing');
+  if (el) el.classList.add('active-screen');
+  updateNavbarForAuth(false);
+}
 
-  // Update mobile bottom nav
-  document.querySelectorAll('.mobile-nav-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.screen === screenId);
-  });
+function routeToPatientDashboard() {
+  window.appState.currentScreen = 'patient-dashboard';
+  hideAllScreens();
+  const el = document.getElementById('screen-patient-dashboard');
+  if (el) el.classList.add('active-screen');
+  updateNavbarForAuth(true, 'patient');
+  renderPatientOverview();
+}
 
-  // Update view screen containers
-  document.querySelectorAll('.view-screen').forEach(screen => {
-    screen.classList.toggle('active-screen', screen.id === `screen-${screenId}`);
-  });
+function routeToDoctorDashboard() {
+  window.appState.currentScreen = 'doctor-dashboard';
+  hideAllScreens();
+  const el = document.getElementById('screen-doctor-dashboard');
+  if (el) el.classList.add('active-screen');
+  updateNavbarForAuth(true, 'doctor');
+  renderDoctorOverview();
+}
 
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function hideAllScreens() {
+  document.querySelectorAll('.view-screen').forEach(s => s.classList.remove('active-screen'));
+}
 
-  // If entering AI screen, render chat history
-  if (screenId === 'ai') {
-    renderAIChatMessages();
+function updateNavbarForAuth(isAuthenticated, role = 'patient') {
+  const publicNav = document.getElementById('public-nav-links');
+  const patientNav = document.getElementById('patient-nav-links');
+  const doctorNav = document.getElementById('doctor-nav-links');
+  const loginBtn = document.getElementById('nav-login-btn');
+  const userPill = document.getElementById('nav-user-pill');
+  const userPillName = document.getElementById('nav-user-pill-name');
+  const userPillTag = document.getElementById('nav-user-pill-tag');
+
+  if (!isAuthenticated) {
+    if (publicNav) publicNav.style.display = 'flex';
+    if (patientNav) patientNav.style.display = 'none';
+    if (doctorNav) doctorNav.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'inline-flex';
+    if (userPill) userPill.style.display = 'none';
+  } else {
+    if (publicNav) publicNav.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userPill) userPill.style.display = 'flex';
+
+    if (role === 'doctor') {
+      if (patientNav) patientNav.style.display = 'none';
+      if (doctorNav) doctorNav.style.display = 'flex';
+      if (userPillName) userPillName.textContent = 'Dr. H. S. Sharma';
+      if (userPillTag) userPillTag.textContent = '✓ Verified Doctor';
+    } else {
+      if (patientNav) patientNav.style.display = 'flex';
+      if (doctorNav) doctorNav.style.display = 'none';
+      if (userPillName) userPillName.textContent = 'Ayush (58)';
+      if (userPillTag) userPillTag.textContent = 'Patient Account';
+    }
   }
 }
 
 /* ==========================================================================
-   Dynamic Profile Re-Matching Engine
+   Auth Modal & Role Selector
    ========================================================================== */
-function recalculateMatchScores() {
-  const profile = window.appState.userProfile;
+function openAuthModal(defaultRole = 'patient') {
+  const modal = document.getElementById('auth-modal');
+  modal.classList.add('active');
+  selectAuthRole(defaultRole);
+}
 
-  window.appState.schemes.forEach(scheme => {
-    let score = 50;
+function closeAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (modal) modal.classList.remove('active');
+}
 
-    // Income match
-    if (profile.familyIncome <= 250000) {
-      score += 25;
-    } else if (profile.familyIncome <= 500000) {
-      score += 15;
-    } else {
-      if (scheme.id === 'pmjay-vav' || scheme.id === 'pmbjp') score += 30; // Universal schemes
-      else score -= 10;
-    }
+function selectAuthRole(role) {
+  const patientCard = document.getElementById('role-card-patient');
+  const doctorCard = document.getElementById('role-card-doctor');
+  const patientForm = document.getElementById('auth-form-patient');
+  const doctorForm = document.getElementById('auth-form-doctor');
 
-    // State match
-    if (scheme.state === 'All India' || scheme.state.toLowerCase() === profile.state.toLowerCase()) {
-      score += 15;
-    } else {
-      score -= 20;
-    }
+  if (role === 'doctor') {
+    if (patientCard) patientCard.classList.remove('selected');
+    if (doctorCard) doctorCard.classList.add('selected');
+    if (patientForm) patientForm.style.display = 'none';
+    if (doctorForm) doctorForm.style.display = 'block';
+  } else {
+    if (patientCard) patientCard.classList.add('selected');
+    if (doctorCard) doctorCard.classList.remove('selected');
+    if (patientForm) patientForm.style.display = 'block';
+    if (doctorForm) doctorForm.style.display = 'none';
+  }
+}
 
-    // Condition match
-    if (profile.healthConditions.some(c => c.toLowerCase().includes('cardiac') || c.toLowerCase().includes('hypertension'))) {
-      if (scheme.id === 'pmjay' || scheme.id === 'sarbat-sehat' || scheme.id === 'pmbjp') score += 10;
-    }
+async function handlePatientLogin() {
+  const email = document.getElementById('patient-login-email').value;
+  const pass = document.getElementById('patient-login-pass').value;
 
-    // Senior citizen match
-    if (profile.seniorCitizenInFamily && scheme.id === 'pmjay-vav') {
-      score += 20;
-    }
+  await window.sanjeevaniAuth.signIn(email, pass, 'patient');
+  closeAuthModal();
+  routeToPatientDashboard();
+  showToast('✓ Welcome back, Ayush Bhardwaj!');
+}
 
-    scheme.matchScore = Math.min(99, Math.max(35, score));
+async function handleDoctorLogin() {
+  const email = document.getElementById('doctor-login-email').value;
+  const pass = document.getElementById('doctor-login-pass').value;
+
+  await window.sanjeevaniAuth.signIn(email, pass, 'doctor');
+  closeAuthModal();
+  routeToDoctorDashboard();
+  showToast('✓ Welcome back, Dr. H. S. Sharma!');
+}
+
+async function handleLogout() {
+  await window.sanjeevaniAuth.signOut();
+  routeToLandingPage();
+  showToast('✓ Logged out successfully.');
+}
+
+/* ==========================================================================
+   Patient Dashboard Navigation
+   ========================================================================== */
+function switchPatientTab(tabId) {
+  window.appState.patientSubTab = tabId;
+
+  document.querySelectorAll('.patient-sidebar-link').forEach(link => {
+    link.classList.toggle('active', link.dataset.tab === tabId);
   });
 
-  // Sort by match score
-  window.appState.schemes.sort((a, b) => b.matchScore - a.matchScore);
+  document.querySelectorAll('.patient-tab-content').forEach(content => {
+    content.style.display = content.id === `patient-tab-${tabId}` ? 'block' : 'none';
+  });
+
+  if (tabId === 'records') renderMedicalRecords();
+  if (tabId === 'doctors' || tabId === 'consents') renderDoctorsAndConsents();
+  if (tabId === 'schemes') renderSchemesGrid();
+  if (tabId === 'ai') renderWhatsAppAIChat();
+  if (tabId === 'docs') renderDocumentsGrid();
+  if (tabId === 'applications') renderApplicationsList();
+}
+
+function renderPatientOverview() {
+  const v = window.appState.userProfile.vitals;
+  const bpEl = document.getElementById('vital-bp');
+  const sugarEl = document.getElementById('vital-sugar');
+  const hba1cEl = document.getElementById('vital-hba1c');
+  const bmiEl = document.getElementById('vital-bmi');
+
+  if (bpEl) bpEl.textContent = v.bloodPressure;
+  if (sugarEl) sugarEl.textContent = v.bloodSugarFasting;
+  if (hba1cEl) hba1cEl.textContent = v.hba1c;
+  if (bmiEl) bmiEl.textContent = v.bmi;
+
+  switchPatientTab('overview');
 }
 
 /* ==========================================================================
-   Rendering: Summary Metrics Bar
+   Doctor Dashboard Navigation
    ========================================================================== */
-function renderSummaryMetrics() {
-  const total = window.appState.schemes.length;
-  const highlyRelevant = window.appState.schemes.filter(s => s.matchScore >= 85).length;
-  const updated = window.appState.schemes.filter(s => s.statusType === 'updated').length;
-  const newSchemes = window.appState.schemes.filter(s => s.statusType === 'new').length;
+function switchDoctorTab(tabId) {
+  window.appState.doctorSubTab = tabId;
 
-  const countTotalEl = document.getElementById('count-total-schemes');
-  const countHighEl = document.getElementById('count-high-match');
-  const countUpdatedEl = document.getElementById('count-updated-schemes');
-  const countNewEl = document.getElementById('count-new-schemes');
+  document.querySelectorAll('.doctor-sidebar-link').forEach(link => {
+    link.classList.toggle('active', link.dataset.tab === tabId);
+  });
 
-  if (countTotalEl) countTotalEl.textContent = total;
-  if (countHighEl) countHighEl.textContent = highlyRelevant;
-  if (countUpdatedEl) countUpdatedEl.textContent = updated;
-  if (countNewEl) countNewEl.textContent = newSchemes;
+  document.querySelectorAll('.doctor-tab-content').forEach(content => {
+    content.style.display = content.id === `doctor-tab-${tabId}` ? 'block' : 'none';
+  });
+
+  if (tabId === 'patients') renderDoctorPatientsList();
+  if (tabId === 'requests') renderDoctorRequestsList();
 }
 
-/* ==========================================================================
-   Rendering: Scheme Discovery Dashboard (Screen 3 & 4)
-   ========================================================================== */
-function renderSchemesGrid() {
-  const container = document.getElementById('schemes-grid-container');
+function renderDoctorOverview() {
+  switchDoctorTab('overview');
+  renderDoctorPatientsList();
+  renderDoctorRequestsList();
+}
+
+function renderDoctorPatientsList() {
+  const container = document.getElementById('doctor-patients-container');
   if (!container) return;
 
-  const { schemes, activeTab, searchQuery, filterState, filterCondition, filterGovLevel, filterStatus, sortBy } = window.appState;
-
-  // Filter pipeline
-  let filtered = schemes.filter(scheme => {
-    // Tab Filter
-    if (activeTab === 'active' && scheme.statusType !== 'active') return false;
-    if (activeTab === 'new' && scheme.statusType !== 'new') return false;
-    if (activeTab === 'updated' && scheme.statusType !== 'updated') return false;
-    if (activeTab === 'for-you' && scheme.matchScore < 60) return false;
-
-    // Search query
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchName = scheme.name.toLowerCase().includes(q) || (scheme.hindiName && scheme.hindiName.includes(q));
-      const matchSummary = scheme.shortSummary.toLowerCase().includes(q);
-      const matchCat = scheme.category.toLowerCase().includes(q);
-      if (!matchName && !matchSummary && !matchCat) return false;
-    }
-
-    // State filter
-    if (filterState !== 'all') {
-      if (scheme.state !== 'All India' && scheme.state.toLowerCase() !== filterState.toLowerCase()) return false;
-    }
-
-    // Gov Level
-    if (filterGovLevel !== 'all') {
-      if (!scheme.governmentLevel.toLowerCase().includes(filterGovLevel.toLowerCase())) return false;
-    }
-
-    // Status
-    if (filterStatus !== 'all') {
-      if (scheme.statusType !== filterStatus) return false;
-    }
-
-    return true;
-  });
-
-  // Sorting
-  if (sortBy === 'match') {
-    filtered.sort((a, b) => b.matchScore - a.matchScore);
-  } else if (sortBy === 'updated') {
-    filtered.sort((a, b) => (b.statusType === 'updated' ? 1 : 0) - (a.statusType === 'updated' ? 1 : 0));
-  } else if (sortBy === 'name') {
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  // Update counter in active tab
-  const tabCountEl = document.getElementById(`tab-count-${activeTab}`);
-  if (tabCountEl) tabCountEl.textContent = filtered.length;
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: white; border-radius: 16px; border: 1px dashed var(--border-medium);">
-        <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
-        <h3 style="font-size: 18px; margin-bottom: 8px;">No schemes matched your exact filters</h3>
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">Try clearing some filters or searching for terms like "Ayushman", "Dialysis", or "Punjab".</p>
-        <button class="btn btn-secondary btn-sm" onclick="resetAllFilters()">Reset All Filters</button>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = filtered.map(scheme => `
-    <div class="scheme-card">
+  container.innerHTML = window.appState.doctorPatients.map(p => `
+    <div style="background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px;">
       <div>
-        <div class="scheme-card-top">
-          <div class="scheme-header-meta">
-            <h3 class="scheme-title">${scheme.name}</h3>
-            ${scheme.hindiName ? `<div class="scheme-regional-title">${scheme.hindiName}</div>` : ''}
-          </div>
-          <span class="match-pill">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            ${scheme.matchScore}% Match
-          </span>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main);">${p.name}</h4>
+          <span class="badge badge-active">${p.status}</span>
         </div>
-
-        <div class="scheme-tags-row">
-          <span class="badge badge-${scheme.statusType}">
-            <span class="badge-dot"></span>
-            ${scheme.status}
-          </span>
-          <span class="badge" style="background: #f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-subtle);">
-            ${scheme.governmentLevel}
-          </span>
-          <span class="badge" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;">
-            ${scheme.schemeType}
-          </span>
+        <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px;">
+          ${p.age} Yrs • ${p.gender} • ${p.district}, ${p.state} | Last Visit: <strong>${p.lastConsultation}</strong>
         </div>
-
-        <div class="scheme-why-box">
-          <div class="why-heading">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            Why Recommended For You:
-          </div>
-          <ul class="why-list">
-            ${scheme.whyMatch.slice(0, 2).map(point => `
-              <li>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                ${point}
-              </li>
-            `).join('')}
-          </ul>
+        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">
+          <strong>Diagnosis:</strong> ${p.diagnosis}
         </div>
-
-        <div class="scheme-benefits-strip">
-          <div>
-            <div class="benefit-highlight-text">${scheme.benefits[0]}</div>
-            <div class="benefit-sub-label">Covered at 28,000+ Empaneled Hospitals</div>
-          </div>
-        </div>
-
-        <div class="scheme-docs-preview">
-          <span style="font-weight: 700;">Required Docs:</span>
-          ${scheme.requiredDocuments.map(doc => `<span class="doc-chip">${doc.name}</span>`).join('')}
+        <div style="font-size: 11.5px; color: var(--teal-700); font-weight: 700;">
+          🔒 Consented Records: ${p.sharedRecords.join(', ')} (${p.accessExpires})
         </div>
       </div>
+      <button class="btn btn-primary btn-sm" onclick="openDoctorPatientDetail('${p.id}')">
+        View Consented Profile →
+      </button>
+    </div>
+  `).join('');
+}
 
-      <div class="scheme-card-footer">
-        <div class="source-stamp">
-          <strong>${scheme.officialSource}</strong>
-          <span>Verified: ${scheme.lastVerifiedDate}</span>
-        </div>
-        <div class="card-actions-group">
-          <button class="btn btn-secondary btn-sm" onclick="openSchemeModal('${scheme.id}')">
-            View Details →
-          </button>
-          <button class="btn btn-primary btn-sm" onclick="startAssistedVerification('${scheme.id}')">
-            Verify
-          </button>
-        </div>
+function openDoctorPatientDetail(patientId) {
+  const p = window.appState.doctorPatients.find(item => item.id === patientId);
+  if (!p) return;
+
+  window.appState.selectedPatientForDoctorView = p;
+  const modal = document.getElementById('doctor-patient-detail-modal');
+  const body = document.getElementById('doctor-patient-detail-body');
+
+  body.innerHTML = `
+    <div class="consent-lock-banner">
+      <div>
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase;">🔐 Patient Consented Access (RLS Protected)</div>
+        <div style="font-size: 12px; color: #d1fae5; margin-top: 2px;">Access is strictly limited to records authorized by the patient. Valid until: ${p.accessExpires}</div>
       </div>
+      <button class="btn btn-secondary btn-sm" style="color: white; border-color: rgba(255,255,255,0.4);" onclick="openRequestRecordsModal()">
+        + Request Additional Records
+      </button>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+      <div>
+        <h2 style="font-size: 22px; font-weight: 800;">${p.name}</h2>
+        <div style="font-size: 13px; color: var(--text-muted);">${p.age} Yrs • ${p.gender} • Ludhiana, Punjab • ABHA Linked</div>
+      </div>
+      <span class="badge badge-active">Consultation Active</span>
+    </div>
+
+    <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 10px;">Patient Vitals Snapshot:</h4>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+      <div style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px;"><strong>BP:</strong> 138/88 mmHg</div>
+      <div style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px;"><strong>Fasting Sugar:</strong> 142 mg/dL</div>
+      <div style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px;"><strong>HbA1c:</strong> 7.4%</div>
+      <div style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px;"><strong>BMI:</strong> 24.6</div>
+    </div>
+
+    <h4 style="font-size: 15px; font-weight: 800; margin-bottom: 10px;">Authorized Medical Records:</h4>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+      <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong>Comprehensive Metabolic & Lipid Panel</strong>
+          <div style="font-size: 11.5px; color: var(--text-muted);">14 Aug 2026 • Fasting Sugar: 142 mg/dL, HbA1c: 7.4%</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('Viewing verified Lab Report PDF')">View PDF</button>
+      </div>
+
+      <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong>ECG & Echo Screening Scan</strong>
+          <div style="font-size: 11.5px; color: var(--text-muted);">02 Aug 2026 • Normal sinus rhythm, mild LVH</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('Viewing verified ECG Scan')">View Scan</button>
+      </div>
+
+      <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong>Cardiology Prescription Slip</strong>
+          <div style="font-size: 11.5px; color: var(--text-muted);">02 Aug 2026 • Metformin 500mg, Telmisartan 40mg</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('Viewing verified Prescription')">View Prescription</button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('active');
+}
+
+function closeDoctorPatientDetailModal() {
+  const modal = document.getElementById('doctor-patient-detail-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function openRequestRecordsModal() {
+  const modal = document.getElementById('doctor-request-records-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeRequestRecordsModal() {
+  const modal = document.getElementById('doctor-request-records-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function submitDoctorRecordRequest() {
+  const reason = document.getElementById('doctor-req-reason').value;
+  closeRequestRecordsModal();
+  showToast(`✓ Request sent to patient: ${reason}`);
+}
+
+function renderDoctorRequestsList() {
+  const container = document.getElementById('doctor-requests-container');
+  if (!container) return;
+
+  container.innerHTML = window.appState.doctorRequests.map(r => `
+    <div style="background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h4 style="font-size: 15px; font-weight: 800;">Patient: ${r.patientName}</h4>
+        <div style="font-size: 12.5px; color: var(--text-secondary); margin: 2px 0;"><strong>Requested:</strong> ${r.requestedRecords}</div>
+        <div style="font-size: 11.5px; color: var(--text-muted);">Reason: ${r.reason} • Sent: ${r.date}</div>
+      </div>
+      <span class="badge badge-warning">${r.status}</span>
     </div>
   `).join('');
 }
 
 /* ==========================================================================
-   SCREEN 5 — Scheme Details Modal
+   WHATSAPP-STYLE SANJEEVANI AI CHAT CONTROLLER
    ========================================================================== */
+function renderWhatsAppAIChat() {
+  renderChatSidebarThreads();
+  renderChatFeedMessages();
+}
+
+function renderChatSidebarThreads() {
+  const container = document.getElementById('threads-scroll-container');
+  if (!container) return;
+
+  container.innerHTML = window.aiAssistant.threads.map(t => `
+    <div class="thread-item-card ${t.id === window.aiAssistant.activeThreadId ? 'active' : ''}" onclick="switchActiveThread('${t.id}')">
+      <div class="thread-item-title">${t.title}</div>
+      <div class="thread-item-date">${t.date}</div>
+    </div>
+  `).join('');
+}
+
+function switchActiveThread(threadId) {
+  window.aiAssistant.switchThread(threadId);
+  renderWhatsAppAIChat();
+}
+
+function createNewChatThread() {
+  window.aiAssistant.createThread('New Conversation');
+  renderWhatsAppAIChat();
+  showToast('✓ Started new conversation thread');
+}
+
+function renderChatFeedMessages() {
+  const feed = document.getElementById('wa-messages-feed-container');
+  if (!feed) return;
+
+  const messages = window.aiAssistant.getActiveMessages();
+
+  feed.innerHTML = messages.map(msg => {
+    if (msg.sender === 'user') {
+      return `
+        <div class="wa-bubble-wrap-user">
+          <div class="wa-bubble-user">
+            ${msg.text}
+          </div>
+          <div class="wa-bubble-meta">
+            <span>${msg.timestamp}</span>
+            <span style="color: #0d9488;">✓✓</span>
+          </div>
+        </div>
+      `;
+    } else {
+      const cleanFormattedText = msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      return `
+        <div class="wa-bubble-wrap-ai">
+          <div class="wa-bubble-ai">
+            <div>${cleanFormattedText}</div>
+
+            <!-- Compact Health Context Card -->
+            ${msg.showContextCard ? `
+              <div class="wa-compact-context-card">
+                <div class="context-chips-group">
+                  <span>📍 Punjab</span>
+                  <span>💰 ₹2.5L Income</span>
+                  <span>🩺 Type 2 Diabetes</span>
+                  <span>🩺 Hypertension</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="switchPatientTab('health')">Edit Profile</button>
+              </div>
+            ` : ''}
+
+            <!-- Quick Action Suggestion Chips -->
+            ${msg.showQuickChips && msg.chips ? `
+              <div style="margin-top: 12px;">
+                <div style="font-size: 12px; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px;">What would you like help with?</div>
+                <div class="wa-quick-actions-bar">
+                  ${msg.chips.map(c => `<button class="wa-chip-btn" onclick="handleQuickChipClick('${c}')">${c}</button>`).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Embedded Government Scheme Cards in Chat -->
+            ${msg.matchedSchemes && msg.matchedSchemes.length > 0 ? `
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                ${msg.matchedSchemes.map(sch => `
+                  <div class="wa-scheme-card-embed">
+                    <div class="wa-scheme-embed-header">
+                      <div>
+                        <span class="badge badge-active">🏛️ Government Scheme</span>
+                        <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 4px;">${sch.name}</h4>
+                      </div>
+                      <span class="match-pill">${sch.matchScore}% Match</span>
+                    </div>
+
+                    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
+                      ${sch.shortSummary}
+                    </div>
+
+                    <div style="background: var(--primary-50); padding: 8px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 800; color: var(--primary-900); margin-bottom: 10px;">
+                      Benefit: ${sch.benefits[0]}
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 10px; gap: 8px; flex-wrap: wrap;">
+                      <span style="font-size: 11px; color: var(--text-muted);">Source: ${sch.officialSource}</span>
+                      <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="openSchemeModal('${sch.id}')">View Details →</button>
+                        <button class="btn-speak-listen" onclick="triggerSpeakMessage('${msg.id}', '${sch.name}. ${sch.shortSummary}')">
+                          <span>🔊 Listen</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- AI Action Bar (🔊 Listen & 📋 Copy) -->
+            <div class="wa-ai-actions-bar">
+              <button id="btn-listen-${msg.id}" class="btn-speak-listen" onclick="triggerSpeakMessage('${msg.id}', '${msg.text.replace(/'/g, "\\'")}')">
+                <span>🔊 Listen</span>
+              </button>
+              <button class="btn-copy-chip" onclick="copyMessageText('${msg.text.replace(/'/g, "\\'")}')">
+                <span>📋 Copy</span>
+              </button>
+            </div>
+          </div>
+          <div class="wa-bubble-meta" style="align-self: flex-start;">
+            <span>${msg.timestamp} • Sanjeevani AI</span>
+          </div>
+        </div>
+      `;
+    }
+  }).join('');
+
+  feed.scrollTop = feed.scrollHeight;
+}
+
+/* ==========================================================================
+   Voice Input (Sarvam AI Speech-to-Text & MediaRecorder Web Audio)
+   ========================================================================== */
+async function toggleVoiceRecording() {
+  const overlay = document.getElementById('wa-recording-overlay');
+  const previewText = document.getElementById('recording-transcription-preview');
+
+  if (!window.appState.isVoiceRecording) {
+    // Start Recording
+    window.appState.recordedTranscriptionText = '';
+    const started = await window.aiAssistant.startAudioRecording();
+    window.appState.isVoiceRecording = true;
+
+    if (overlay) overlay.style.display = 'flex';
+    if (previewText) previewText.textContent = 'Listening... Speak in Hindi, Punjabi or English';
+
+    if (window.aiAssistant.recognition) {
+      try {
+        window.aiAssistant.recognition.start();
+        window.aiAssistant.recognition.onresult = (event) => {
+          const transcript = Array.from(event.results).map(r => r[0].transcript).join('').trim();
+          if (transcript) {
+            window.appState.recordedTranscriptionText = transcript;
+            console.log("1 VOICE TRANSCRIPT (Live Interim):", transcript);
+            if (previewText) previewText.textContent = `“${transcript}”`;
+          }
+        };
+      } catch (e) {
+        console.warn('Speech recognition active', e);
+      }
+    }
+  } else {
+    // Stop recording and send audio to Sarvam AI
+    await stopAndProcessVoiceWithSarvam();
+  }
+}
+
+async function stopAndProcessVoiceWithSarvam() {
+  const overlay = document.getElementById('wa-recording-overlay');
+  const previewText = document.getElementById('recording-transcription-preview');
+
+  if (previewText) previewText.textContent = 'Processing speech with Sarvam AI...';
+
+  const audioBlob = await window.aiAssistant.stopAudioRecording();
+  window.appState.isVoiceRecording = false;
+
+  const langMap = {
+    'hi': 'hi-IN', 'en': 'en-IN', 'pa': 'pa-IN', 'bn': 'bn-IN',
+    'mr': 'mr-IN', 'ta': 'ta-IN', 'te': 'te-IN', 'gu': 'gu-IN',
+    'kn': 'kn-IN', 'ml': 'ml-IN', 'or': 'od-IN', 'as': 'as-IN'
+  };
+  const targetLangCode = langMap[window.appState.currentLanguage] || 'hi-IN';
+
+  let transcript = null;
+  if (audioBlob) {
+    transcript = await window.aiAssistant.transcribeAudioWithServer(audioBlob, targetLangCode);
+  }
+
+  // Use transcribed text from Sarvam or SpeechRecognition
+  const finalTranscript = transcript || window.appState.recordedTranscriptionText;
+  if (finalTranscript && finalTranscript.trim()) {
+    window.appState.recordedTranscriptionText = finalTranscript.trim();
+    console.log("1 VOICE TRANSCRIPT (Final):", window.appState.recordedTranscriptionText);
+    if (previewText) previewText.textContent = `“${window.appState.recordedTranscriptionText}”`;
+  } else {
+    if (previewText) previewText.textContent = 'No speech detected. Please try speaking again.';
+  }
+}
+
+function cancelVoiceRecording() {
+  window.appState.isVoiceRecording = false;
+  window.appState.recordedTranscriptionText = '';
+  const overlay = document.getElementById('wa-recording-overlay');
+  if (overlay) overlay.style.display = 'none';
+  window.aiAssistant.stopAudioRecording();
+  if (window.aiAssistant.recognition) {
+    try { window.aiAssistant.recognition.stop(); } catch(e) {}
+  }
+}
+
+function confirmSendVoiceRecording() {
+  const text = window.appState.recordedTranscriptionText;
+  if (!text || !text.trim()) {
+    showToast('Please speak a question first');
+    return;
+  }
+  cancelVoiceRecording();
+  sendUserChatMessage(text.trim(), true); // true = speak answer aloud
+}
+
+/* ==========================================================================
+   Voice Conversation Mode (Dedicated Real-Time Dynamic Loop)
+   ========================================================================== */
+function openVoiceModeModal() {
+  const modal = document.getElementById('voice-conversation-modal');
+  if (modal) modal.classList.add('active');
+  startVoiceConversationLoop();
+}
+
+function closeVoiceModeModal() {
+  const modal = document.getElementById('voice-conversation-modal');
+  if (modal) modal.classList.remove('active');
+  window.aiAssistant.stopSpeaking();
+  if (window.aiAssistant.recognition) {
+    try { window.aiAssistant.recognition.stop(); } catch(e) {}
+  }
+}
+
+function startVoiceConversationLoop() {
+  const statusEl = document.getElementById('voice-mode-status-text');
+  if (statusEl) statusEl.textContent = 'Listening... Speak your healthcare or scheme question';
+
+  if (!window.aiAssistant.recognition) {
+    if (statusEl) statusEl.textContent = 'Microphone ready. Please speak your question.';
+    return;
+  }
+
+  try {
+    window.aiAssistant.recognition.start();
+
+    window.aiAssistant.recognition.onresult = async (event) => {
+      const transcript = Array.from(event.results).map(r => r[0].transcript).join('').trim();
+      if (!transcript) return;
+
+      console.log("1 VOICE TRANSCRIPT (Voice Mode):", transcript);
+      if (statusEl) statusEl.textContent = `“${transcript}”`;
+
+      try { window.aiAssistant.recognition.stop(); } catch(e) {}
+
+      if (statusEl) statusEl.textContent = 'Sanjeevani AI is checking schemes...';
+
+      // Call dynamic chat API
+      console.log("2 CHAT (Voice Mode):", transcript);
+      const aiResponse = await window.aiAssistant.processQuery(
+        transcript,
+        window.appState.userProfile,
+        window.appState.schemes
+      );
+
+      console.log("3 API RESPONSE (Voice Mode):", aiResponse);
+      console.log("4 ANSWER (Voice Mode):", aiResponse ? aiResponse.text : '');
+
+      renderChatFeedMessages();
+
+      if (statusEl) statusEl.textContent = 'Speaking...';
+      const cleanSpeakText = aiResponse && aiResponse.text ? aiResponse.text : 'Main aapki sahayata ke liye tayar hoon.';
+
+      // Speak real dynamic answer
+      window.aiAssistant.speakText(cleanSpeakText, 'voice-modal-msg', (isSpeaking) => {
+        if (!isSpeaking) {
+          if (statusEl) statusEl.textContent = 'Listening... (Speak your next question anytime)';
+          try { window.aiAssistant.recognition.start(); } catch(e) {}
+        }
+      });
+    };
+
+    window.aiAssistant.recognition.onerror = (e) => {
+      console.warn('Voice recognition error:', e);
+      if (statusEl) statusEl.textContent = 'Listening... (Tap to speak)';
+    };
+
+  } catch(err) {
+    console.warn('Voice loop initialization:', err);
+  }
+}
+
+/* ==========================================================================
+   Sarvam AI Key Settings Modal
+   ========================================================================== */
+function openSarvamSettingsModal() {
+  const modal = document.getElementById('sarvam-settings-modal');
+  const keyInput = document.getElementById('sarvam-api-key-input');
+  if (keyInput) keyInput.value = window.aiAssistant.sarvamApiKey || '';
+  if (modal) modal.classList.add('active');
+}
+
+function closeSarvamSettingsModal() {
+  const modal = document.getElementById('sarvam-settings-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function saveSarvamSettings() {
+  const keyInput = document.getElementById('sarvam-api-key-input');
+  const modelSelect = document.getElementById('sarvam-model-select');
+  const modeSelect = document.getElementById('sarvam-mode-select');
+
+  const key = keyInput ? keyInput.value.trim() : '';
+  window.aiAssistant.sarvamApiKey = key;
+  if (modelSelect) window.aiAssistant.sarvamModel = modelSelect.value;
+  if (modeSelect) window.aiAssistant.sarvamMode = modeSelect.value;
+
+  localStorage.setItem('sanjeevani_sarvam_api_key', key);
+  closeSarvamSettingsModal();
+  showToast('✓ Sarvam AI Speech settings saved successfully');
+}
+
+/* ==========================================================================
+   Audio Text-to-Speech (🔊 Listen Playback)
+   ========================================================================== */
+function triggerSpeakMessage(msgId, text) {
+  const btn = document.getElementById(`btn-listen-${msgId}`);
+  window.aiAssistant.speakText(text, msgId, (isSpeaking) => {
+    if (btn) {
+      if (isSpeaking) {
+        btn.classList.add('speaking');
+        btn.innerHTML = '<span>⏸ Pause</span>';
+      } else {
+        btn.classList.remove('speaking');
+        btn.innerHTML = '<span>🔊 Listen</span>';
+      }
+    }
+  });
+}
+
+function copyMessageText(text) {
+  navigator.clipboard.writeText(text);
+  showToast('✓ Message copied to clipboard');
+}
+
+function toggleAttachmentMenu() {
+  const popup = document.getElementById('wa-attachment-popup');
+  if (!popup) return;
+  popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function handleAttachmentOption(type) {
+  toggleAttachmentMenu();
+  showToast(`✓ Attached: ${type}. OCR extracting clinical metadata...`);
+  setTimeout(() => {
+    sendUserChatMessage(`[Uploaded ${type}]: Comprehensive Metabolic Panel (Fasting Sugar: 142 mg/dL)`);
+  }, 1000);
+}
+
+function handleQuickChipClick(chipText) {
+  sendUserChatMessage(chipText);
+}
+
+async function sendUserChatMessage(customText = null, speakAloud = false) {
+  const inputEl = document.getElementById('wa-main-chat-input');
+  const text = customText || (inputEl ? inputEl.value : '');
+  if (!text.trim()) return;
+
+  console.log("2 CHAT MESSAGE:", text.trim());
+
+  if (inputEl && !customText) inputEl.value = '';
+  renderChatFeedMessages();
+
+  const thinkingBox = document.getElementById('wa-thinking-indicator');
+  if (thinkingBox) thinkingBox.style.display = 'flex';
+
+  const aiResponse = await window.aiAssistant.processQuery(
+    text.trim(),
+    window.appState.userProfile,
+    window.appState.schemes,
+    (stepText) => {
+      const stepEl = document.getElementById('wa-thinking-step-text');
+      if (stepEl) stepEl.textContent = stepText;
+    }
+  );
+
+  console.log("3 API RESPONSE:", aiResponse);
+  console.log("4 ANSWER:", aiResponse ? aiResponse.text : '');
+
+  if (thinkingBox) thinkingBox.style.display = 'none';
+  renderChatSidebarThreads();
+  renderChatFeedMessages();
+
+  if (speakAloud && aiResponse && aiResponse.text) {
+    triggerSpeakMessage(aiResponse.id, aiResponse.text);
+  }
+}
+
+/* ==========================================================================
+   Dynamic Scheme Re-Matching Engine
+   ========================================================================== */
+function recalculateMatchScores() {
+  const p = window.appState.userProfile;
+
+  window.appState.schemes.forEach(scheme => {
+    let score = 50;
+
+    if (p.familyIncome <= 250000) score += 25;
+    else if (p.familyIncome <= 500000) score += 15;
+    else if (scheme.id === 'pmjay-vav' || scheme.id === 'pmbjp') score += 30;
+
+    if (scheme.state === 'All India' || scheme.state.toLowerCase() === p.state.toLowerCase()) score += 15;
+    if (p.chronicConditions.some(c => c.toLowerCase().includes('diabetes') || c.toLowerCase().includes('hypertension'))) score += 10;
+    if (p.seniorCitizenInFamily && scheme.id === 'pmjay-vav') score += 20;
+
+    scheme.matchScore = Math.min(99, Math.max(40, score));
+  });
+
+  window.appState.schemes.sort((a, b) => b.matchScore - a.matchScore);
+}
+
+function setDiscoveryStep(step) {
+  window.appState.discoveryStep = step;
+  const s1 = document.getElementById('discovery-step-1');
+  const s2 = document.getElementById('discovery-step-2');
+  const s3 = document.getElementById('discovery-step-3');
+  const s4 = document.getElementById('discovery-step-4');
+
+  if (s1) s1.style.display = step === 1 ? 'block' : 'none';
+  if (s2) s2.style.display = step === 2 ? 'block' : 'none';
+  if (s3) s3.style.display = step === 3 ? 'block' : 'none';
+  if (s4) s4.style.display = step === 4 ? 'block' : 'none';
+
+  if (step === 3) {
+    setTimeout(() => {
+      setDiscoveryStep(4);
+      renderSchemesGrid();
+    }, 1200);
+  }
+}
+
+function renderSchemesGrid() {
+  const container = document.getElementById('schemes-grid-container');
+  if (!container) return;
+
+  container.innerHTML = window.appState.schemes.map(s => `
+    <div class="scheme-card">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <h3 style="font-size: 17px; font-weight: 800;">${s.name}</h3>
+          <span class="match-pill">${s.matchScore}% Match</span>
+        </div>
+        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+          <span class="badge badge-${s.statusType}">${s.status}</span>
+          <span class="badge badge-active">${s.eligibilityTag}</span>
+        </div>
+        <div style="background: var(--primary-50); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 800; color: var(--primary-900);">
+          ${s.benefits[0]}
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+        <span style="font-size: 11px; color: var(--text-muted);">Source: ${s.officialSource}</span>
+        <button class="btn btn-primary btn-sm" onclick="openSchemeModal('${s.id}')">View Details →</button>
+      </div>
+    </div>
+  `).join('');
+}
+
 function openSchemeModal(schemeId) {
   const scheme = window.appState.schemes.find(s => s.id === schemeId);
   if (!scheme) return;
 
-  window.appState.selectedSchemeForModal = scheme;
   const modal = document.getElementById('scheme-details-modal');
   const body = document.getElementById('scheme-modal-body');
 
   body.innerHTML = `
-    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
       <div>
-        <span class="badge badge-${scheme.statusType}" style="margin-bottom: 8px;">
-          <span class="badge-dot"></span>
-          ${scheme.status}
-        </span>
-        <h2 style="font-size: 24px; font-weight: 800; color: var(--text-main);">${scheme.name}</h2>
-        ${scheme.hindiName ? `<div style="font-size: 14px; color: var(--text-muted);">${scheme.hindiName}</div>` : ''}
+        <span class="badge badge-${scheme.statusType}">${scheme.status}</span>
+        <h2 style="font-size: 20px; font-weight: 800; margin-top: 4px;">${scheme.name}</h2>
       </div>
-      <div class="match-pill" style="font-size: 14px; padding: 6px 14px;">
-        ${scheme.matchScore}% Match Score
-      </div>
+      <span class="match-pill">${scheme.matchScore}% Match</span>
     </div>
 
-    <div style="background: var(--bg-surface-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-      <strong>Overview: </strong> ${scheme.fullDescription}
+    <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+      ${scheme.fullDescription}
+    </p>
+
+    <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 8px;">Benefits:</h4>
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+      ${scheme.benefits.map(b => `<div style="font-size: 12.5px; background: #f0fdf4; padding: 6px 10px; border-radius: 6px;">✓ ${b}</div>`).join('')}
     </div>
 
-    <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--primary-900);">Why Sanjeevani Recommended This:</h4>
-    <div class="match-matrix-grid">
-      <div class="matrix-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        <span><strong>Location:</strong> ${scheme.state} Network Eligible</span>
-      </div>
-      <div class="matrix-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        <span><strong>Income:</strong> ≤ ₹2.5L Household Tier</span>
-      </div>
-      <div class="matrix-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        <span><strong>Clinical Need:</strong> Cashless Hospitalization</span>
-      </div>
-      <div class="matrix-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        <span><strong>Beneficiary:</strong> NFSA / Ration Card Match</span>
-      </div>
-    </div>
-
-    <h4 style="font-size: 16px; font-weight: 800; margin: 20px 0 10px; color: var(--text-main);">Key Scheme Benefits:</h4>
-    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-      ${scheme.benefits.map(b => `
-        <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; background: #f0fdf4; padding: 8px 12px; border-radius: 8px; border: 1px solid #d1fae5;">
-          <span style="color: var(--primary-700); font-weight: 800;">✓</span>
-          <span>${b}</span>
-        </div>
-      `).join('')}
-    </div>
-
-    <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px; margin-bottom: 20px;">
-      <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; color: #92400e; margin-bottom: 4px; font-size: 13px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Official Verification Notice
-      </div>
-      <p style="font-size: 12.5px; color: #78350f; line-height: 1.5;">
-        Your profile appears to match available criteria (Potentially Eligible), but final eligibility must be verified through the official government portal or registered kiosk.
-      </p>
-    </div>
-
-    <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 10px; color: var(--text-main);">Required Documents Checklist:</h4>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px;">
-      ${scheme.requiredDocuments.map(d => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: white; border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 13px;">
-          <span>${d.name}</span>
-          <span class="badge ${d.status === 'Available' ? 'badge-active' : 'badge-warning'}">${d.status}</span>
-        </div>
-      `).join('')}
-    </div>
-
-    <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-subtle); gap: 14px; flex-wrap: wrap;">
-      <div>
-        <div style="font-size: 12px; font-weight: 700; color: var(--text-main);">Source: ${scheme.officialSource}</div>
-        <div style="font-size: 11px; color: var(--text-muted);">Last Verified: ${scheme.lastVerifiedDate} | Helpline: ${scheme.helpline}</div>
-      </div>
-      <div style="display: flex; gap: 10px;">
-        <a href="${scheme.officialUrl}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-          Visit Official Portal ↗
-        </a>
-        <button class="btn btn-primary btn-sm" onclick="trackNewApplication('${scheme.id}')">
-          Apply via Sanjeevani Track
-        </button>
-      </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+      <span style="font-size: 11px; color: var(--text-muted);">Source: ${scheme.officialSource}</span>
+      <a href="${scheme.officialUrl}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Official Portal ↗</a>
     </div>
   `;
 
@@ -381,570 +908,77 @@ function closeSchemeModal() {
   if (modal) modal.classList.remove('active');
 }
 
-/* ==========================================================================
-   SCREEN 6 — Scheme Intelligence & Timeline Feed
-   ========================================================================== */
-function renderIntelligenceTimeline(filterType = 'all') {
-  const container = document.getElementById('timeline-feed-container');
+function renderMedicalRecords() {
+  const container = document.getElementById('records-grid-container');
   if (!container) return;
 
-  let updates = window.appState.intelligence;
-  if (filterType !== 'all') {
-    updates = updates.filter(u => u.type === filterType);
-  }
-
-  container.innerHTML = updates.map(item => `
-    <div class="timeline-card">
-      <div class="timeline-dot">
-        ${item.type === 'new' ? '🆕' : item.type === 'warning' ? '⚠️' : '🟢'}
-      </div>
-      <div class="timeline-header">
-        <span class="badge badge-${item.type}">
-          <span class="badge-dot"></span>
-          ${item.status}
-        </span>
-        <span class="timeline-date">${item.date}</span>
-      </div>
-      <h3 class="timeline-headline">${item.headline}</h3>
-      <div style="font-size: 13px; font-weight: 700; color: var(--primary-800); margin-bottom: 6px;">
-        Scheme: ${item.scheme}
-      </div>
-      <p class="timeline-body">${item.summary}</p>
-      <div class="timeline-impact-banner">
-        <strong>Impact on Citizens:</strong> ${item.impact}
-      </div>
-      <div class="timeline-footer">
-        <span>Source: <strong>${item.source}</strong></span>
-        <a href="${item.sourceUrl}" target="_blank" rel="noopener" style="font-weight: 700;">View Official Gazette ↗</a>
-      </div>
+  container.innerHTML = window.appState.medicalRecords.map(r => `
+    <div style="background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px;">
+      <span class="badge" style="background: #f1f5f9; color: var(--text-secondary);">${r.category}</span>
+      <h4 style="font-size: 15px; font-weight: 800; margin: 6px 0;">${r.title}</h4>
+      <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 8px;">${r.summary}</p>
+      <div style="font-size: 11px; color: var(--text-muted);">${r.date} • ${r.facility}</div>
     </div>
   `).join('');
 }
 
-/* ==========================================================================
-   SCREEN 7 — Health Profile Controller
-   ========================================================================== */
-function populateProfileForm() {
-  const profile = window.appState.userProfile;
-  const nameEl = document.getElementById('profile-name');
-  const ageEl = document.getElementById('profile-age');
-  const stateEl = document.getElementById('profile-state');
-  const districtEl = document.getElementById('profile-district');
-  const incomeSlider = document.getElementById('income-slider');
-  const incomeDisplay = document.getElementById('income-display-val');
-
-  if (nameEl) nameEl.value = profile.name;
-  if (ageEl) ageEl.value = profile.age;
-  if (stateEl) stateEl.value = profile.state;
-  if (districtEl) districtEl.value = profile.district;
-  if (incomeSlider) incomeSlider.value = profile.familyIncome;
-  if (incomeDisplay) incomeDisplay.textContent = `₹${(profile.familyIncome / 100000).toFixed(1)} Lakh / Year`;
+function renderDoctorsAndConsents() {
+  const docContainer = document.getElementById('doctors-grid-container');
+  if (docContainer) {
+    docContainer.innerHTML = window.appState.doctors.map(d => `
+      <div style="background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+        <div>
+          <h4 style="font-size: 15px; font-weight: 800;">${d.name}</h4>
+          <div style="font-size: 12px; color: var(--primary-700); font-weight: 600;">${d.specialty}</div>
+          <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">${d.hospital}</div>
+        </div>
+        <button class="btn btn-teal btn-sm" onclick="openDoctorConsentModal('${d.id}')">Share Records With Consent</button>
+      </div>
+    `).join('');
+  }
 }
 
-function handleProfileUpdate() {
-  const nameEl = document.getElementById('profile-name');
-  const ageEl = document.getElementById('profile-age');
-  const stateEl = document.getElementById('profile-state');
-  const districtEl = document.getElementById('profile-district');
-  const incomeSlider = document.getElementById('income-slider');
-
-  if (nameEl) window.appState.userProfile.name = nameEl.value;
-  if (ageEl) window.appState.userProfile.age = parseInt(ageEl.value, 10) || 38;
-  if (stateEl) window.appState.userProfile.state = stateEl.value;
-  if (districtEl) window.appState.userProfile.district = districtEl.value;
-  if (incomeSlider) window.appState.userProfile.familyIncome = parseInt(incomeSlider.value, 10);
-
-  // Recalculate match scores
-  recalculateMatchScores();
-  renderSummaryMetrics();
-  renderSchemesGrid();
-
-  // Update dynamic score card in profile screen
-  const topMatch = window.appState.schemes[0];
-  const scoreNumEl = document.getElementById('profile-top-score');
-  const scoreSchemeEl = document.getElementById('profile-top-scheme');
-  if (scoreNumEl) scoreNumEl.textContent = `${topMatch.matchScore}%`;
-  if (scoreSchemeEl) scoreSchemeEl.textContent = topMatch.name;
-
-  showToast('✓ Profile updated & scheme matches refreshed!');
-}
-
-/* ==========================================================================
-   SCREEN 8 — Document Center & OCR Simulation
-   ========================================================================== */
 function renderDocumentsGrid() {
   const container = document.getElementById('documents-grid-container');
   if (!container) return;
 
-  container.innerHTML = window.appState.documents.map(doc => `
-    <div class="doc-card">
-      <div>
-        <div class="doc-card-top">
-          <div class="doc-icon-badge">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <span class="badge ${doc.status === 'Verified' ? 'badge-active' : 'badge-warning'}">
-            ${doc.status}
-          </span>
-        </div>
-        <div style="margin: 12px 0 6px;">
-          <h4 class="doc-name">${doc.name}</h4>
-          <span class="doc-type-lbl">${doc.type} • ${doc.fileSize}</span>
-        </div>
-        <div class="doc-data-snippet">
-          ${Object.entries(doc.extractedData).slice(0, 3).map(([key, val]) => `
-            <div><strong>${key}:</strong> ${val}</div>
-          `).join('')}
-        </div>
-      </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
-        <span style="font-size: 11px; color: var(--text-muted);">Uploaded: ${doc.uploadedDate}</span>
-        <button class="btn btn-secondary btn-sm" onclick="showToast('Viewing verified document preview...')">
-          View
-        </button>
-      </div>
+  container.innerHTML = window.appState.documents.map(d => `
+    <div style="background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px;">
+      <h4 style="font-size: 14px; font-weight: 800;">${d.name}</h4>
+      <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">${d.type}</div>
+      <span class="badge badge-active">${d.status}</span>
     </div>
   `).join('');
 }
 
-function simulateDocumentOCR() {
-  const modal = document.getElementById('ocr-scan-modal');
-  modal.classList.add('active');
-
-  const scanText = document.getElementById('ocr-scan-status-text');
-  const scanProgress = document.getElementById('ocr-scan-progress');
-
-  const steps = [
-    "Uploading document to encrypted vault...",
-    "Extracting metadata via intelligent OCR scanner...",
-    "Cross-referencing Aadhaar / Income certificate fields...",
-    "Updating Sanjeevani health profile..."
-  ];
-
-  let step = 0;
-  const interval = setInterval(() => {
-    if (step < steps.length) {
-      if (scanText) scanText.textContent = steps[step];
-      if (scanProgress) scanProgress.style.width = `${(step + 1) * 25}%`;
-      step++;
-    } else {
-      clearInterval(interval);
-      setTimeout(() => {
-        modal.classList.remove('active');
-        showToast('✓ OCR successfully verified new document & updated profile!');
-      }, 500);
-    }
-  }, 500);
-}
-
-/* ==========================================================================
-   SCREEN 9 — Application Tracker
-   ========================================================================== */
 function renderApplicationsList() {
   const container = document.getElementById('applications-list-container');
   if (!container) return;
 
-  container.innerHTML = window.appState.applications.map(app => `
-    <div class="application-card">
-      <div class="app-card-header">
-        <div>
-          <span class="app-ref-no">${app.referenceNo}</span>
-          <h3 class="app-title" style="margin-top: 6px;">${app.schemeName}</h3>
-        </div>
-        <span class="badge badge-warning">
-          <span class="badge-dot"></span>
-          ${app.statusLabel}
-        </span>
-      </div>
-
-      <div class="step-tracker-pipeline">
-        ${app.steps.map((step, idx) => `
-          <div class="pipeline-step ${step.completed ? 'completed' : step.inProgress ? 'current' : ''}">
-            <div class="step-bubble">
-              ${step.completed ? '✓' : idx + 1}
-            </div>
-            <div class="step-label">${step.label}</div>
-          </div>
-        `).join('')}
-      </div>
-
-      <div style="background: var(--bg-surface-subtle); border-radius: var(--radius-md); padding: 14px; font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-        <strong>Official Remark:</strong> ${app.notes}
-      </div>
-
-      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--text-muted);">
-        <span>Assigned: <strong>${app.assignedCenter}</strong></span>
-        <span>Est. Card Ready: <strong>${app.estimatedResolution}</strong></span>
-      </div>
+  container.innerHTML = window.appState.applications.map(a => `
+    <div style="background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 12px;">
+      <span style="font-size: 11px; font-weight: 700; color: var(--teal-700);">${a.referenceNo}</span>
+      <h4 style="font-size: 16px; font-weight: 800;">${a.schemeName}</h4>
+      <div style="font-size: 12px; color: var(--text-muted);">Status: ${a.statusLabel}</div>
     </div>
   `).join('');
 }
 
-function trackNewApplication(schemeId) {
-  const scheme = window.appState.schemes.find(s => s.id === schemeId);
-  if (!scheme) return;
-
-  const newApp = {
-    id: 'app-' + Date.now(),
-    referenceNo: `SNJ-2026-PB-${Math.floor(1000 + Math.random() * 9000)}`,
-    schemeName: scheme.name,
-    appliedDate: 'Today',
-    currentStage: 'Eligibility Check',
-    stageIndex: 1,
-    totalStages: 5,
-    statusLabel: 'Verification In Progress',
-    statusColor: 'blue',
-    estimatedResolution: 'Within 7 Working Days',
-    notes: 'Application initialized via Sanjeevani smart eligibility match. E-KYC scheduled.',
-    assignedCenter: 'District Health Agency / Seva Kendra',
-    steps: [
-      { label: 'Profile Submitted', completed: true, date: 'Just now' },
-      { label: 'Eligibility Check', completed: false, inProgress: true, date: 'Under automated check' },
-      { label: 'Documents Submitted', completed: false, inProgress: false, date: 'Pending' },
-      { label: 'Gov Verification', completed: false, inProgress: false, date: 'Pending' },
-      { label: 'Approved', completed: false, inProgress: false, date: 'Pending' }
-    ]
-  };
-
-  window.appState.applications.unshift(newApp);
-  renderApplicationsList();
-  closeSchemeModal();
-  switchScreen('applications');
-  showToast(`✓ Assisted application created for ${scheme.name}!`);
-}
-
-function startAssistedVerification(schemeId) {
-  openSchemeModal(schemeId);
-}
-
-/* ==========================================================================
-   SCREEN 2 — Conversational AI Assistant
-   ========================================================================== */
-function renderAIChatMessages() {
-  const container = document.getElementById('chat-messages-container');
-  if (!container) return;
-
-  container.innerHTML = window.aiAssistant.messages.map(msg => {
-    if (msg.sender === 'user') {
-      return `
-        <div class="chat-bubble-wrap user-msg">
-          <div class="chat-avatar user-av">A</div>
-          <div class="chat-bubble-content">
-            <div class="bubble-text">${msg.text}</div>
-            <div style="font-size: 11px; color: var(--text-muted); align-self: flex-end;">${msg.timestamp}</div>
-          </div>
-        </div>
-      `;
-    } else {
-      return `
-        <div class="chat-bubble-wrap ai-msg">
-          <div class="chat-avatar ai-av">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
-          </div>
-          <div class="chat-bubble-content" style="width: 100%;">
-            <div class="bubble-text">${msg.text}</div>
-            
-            ${msg.reasoningPoints ? `
-              <div class="ai-reasoning-card">
-                <div class="ai-reasoning-title">Intelligent Match Analysis:</div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  ${msg.reasoningPoints.map(p => `<div style="font-size: 13px; color: var(--text-secondary);">${p}</div>`).join('')}
-                </div>
-              </div>
-            ` : ''}
-
-            ${msg.matchedSchemes && msg.matchedSchemes.length > 0 ? `
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
-                ${msg.matchedSchemes.map(sch => `
-                  <div class="ai-matched-scheme-card">
-                    <div>
-                      <div class="ai-scheme-name">${sch.name}</div>
-                      <div class="ai-scheme-benefit">${sch.benefits[0]}</div>
-                    </div>
-                    <button class="btn btn-primary btn-sm" onclick="openSchemeModal('${sch.id}')">
-                      View →
-                    </button>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-
-            ${msg.chips ? `
-              <div class="quick-chips-row" style="padding: 6px 0 0;">
-                ${msg.chips.map(c => `
-                  <button class="suggestion-chip" onclick="handleChipClick('${c}')">${c}</button>
-                `).join('')}
-              </div>
-            ` : ''}
-
-            <div style="font-size: 11px; color: var(--text-muted);">${msg.timestamp}</div>
-          </div>
-        </div>
-      `;
-    }
-  }).join('');
-
-  container.scrollTop = container.scrollHeight;
-}
-
-async function handleSendMessage() {
-  const inputEl = document.getElementById('chat-user-input');
-  if (!inputEl) return;
-  const text = inputEl.value;
-  if (!text.trim()) return;
-
-  inputEl.value = '';
-  renderAIChatMessages();
-
-  const progressBox = document.getElementById('ai-progress-indicator');
-  const progressText = document.getElementById('progress-step-text');
-  const progressFill = document.getElementById('progress-bar-fill');
-
-  if (progressBox) progressBox.style.display = 'flex';
-
-  await window.aiAssistant.processQuery(
-    text,
-    window.appState.userProfile,
-    window.appState.schemes,
-    (stepText, percent) => {
-      if (progressText) progressText.textContent = stepText;
-      if (progressFill) progressFill.style.width = `${percent}%`;
-    }
-  );
-
-  if (progressBox) progressBox.style.display = 'none';
-  renderAIChatMessages();
-}
-
-function handleChipClick(chipText) {
-  const inputEl = document.getElementById('chat-user-input');
-  if (inputEl) {
-    inputEl.value = chipText;
-    handleSendMessage();
-  }
-}
-
-/* ==========================================================================
-   SCREEN 12 — Admin Knowledge Base
-   ========================================================================== */
-function renderAdminTable() {
-  const tbody = document.getElementById('admin-schemes-tbody');
-  if (!tbody) return;
-
-  tbody.innerHTML = window.appState.adminRecords.map(rec => `
-    <tr>
-      <td><strong>${rec.name}</strong></td>
-      <td>${rec.level}</td>
-      <td>${rec.state}</td>
-      <td><span class="badge badge-active">${rec.status}</span></td>
-      <td>${rec.eligibility}</td>
-      <td>${rec.benefit}</td>
-      <td>${rec.lastUpdated}</td>
-      <td>${rec.officialSource}</td>
-      <td>
-        <button class="btn btn-secondary btn-sm" onclick="showToast('Source verified from official gazette!')">
-          Verify Source
-        </button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function triggerSourceVerificationWorkflow() {
-  const modal = document.getElementById('admin-workflow-modal');
-  if (modal) modal.classList.add('active');
-}
-
-function closeAdminWorkflowModal() {
-  const modal = document.getElementById('admin-workflow-modal');
-  if (modal) modal.classList.remove('active');
-}
-
-function publishAdminVerifiedScheme() {
-  closeAdminWorkflowModal();
-  showToast('✓ Scheme update published & live in Sanjeevani registry!');
-}
-
-/* ==========================================================================
-   Multilingual Controller (Screen 10)
-   ========================================================================== */
-function handleLanguageChange(langCode) {
-  window.appState.currentLanguage = langCode;
-  const dict = TRANSLATIONS[langCode] || TRANSLATIONS.en;
-
-  // Update App Texts
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (dict[key]) {
-      el.textContent = dict[key];
-    }
-  });
-
-  // Update Search Placeholder
-  const searchInput = document.getElementById('main-scheme-search');
-  if (searchInput && dict.searchPlaceholder) {
-    searchInput.placeholder = dict.searchPlaceholder;
-  }
-
-  showToast(`Language set to ${langCode.toUpperCase()}`);
-}
-
-/* ==========================================================================
-   Simulator Mode Toggle (Screen 11)
-   ========================================================================== */
-function toggleMobileSimulator() {
-  const btn = document.getElementById('simulator-toggle-btn');
-  const appContainer = document.getElementById('app-root-container');
-
-  window.appState.isMobileSimulator = !window.appState.isMobileSimulator;
-
-  if (window.appState.isMobileSimulator) {
-    document.body.classList.add('simulator-active-body');
-    appContainer.classList.add('simulator-frame');
-    if (btn) btn.classList.add('active');
-    showToast('📱 Mobile View Simulator Activated (390px Viewport)');
-  } else {
-    document.body.classList.remove('simulator-active-body');
-    appContainer.classList.remove('simulator-frame');
-    if (btn) btn.classList.remove('active');
-    showToast('💻 Desktop Viewport Restored');
-  }
-}
-
-/* ==========================================================================
-   Toast Notification Helper
-   ========================================================================== */
-function showToast(message) {
+function showToast(msg) {
   const container = document.getElementById('toast-container');
   if (!container) return;
-
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = message;
-
+  toast.innerHTML = msg;
   container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3200);
+  setTimeout(() => toast.remove(), 3000);
 }
 
-function resetAllFilters() {
-  window.appState.searchQuery = '';
-  window.appState.filterState = 'all';
-  window.appState.filterCondition = 'all';
-  window.appState.filterGovLevel = 'all';
-  window.appState.filterStatus = 'all';
-  window.appState.activeTab = 'for-you';
-  window.appState.sortBy = 'match';
-
-  const searchInput = document.getElementById('main-scheme-search');
-  const stateSelect = document.getElementById('filter-state');
-  const levelSelect = document.getElementById('filter-gov-level');
-  const sortSelect = document.getElementById('sort-schemes-by');
-
-  if (searchInput) searchInput.value = '';
-  if (stateSelect) stateSelect.value = 'all';
-  if (levelSelect) levelSelect.value = 'all';
-  if (sortSelect) sortSelect.value = 'match';
-
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === 'for-you');
-  });
-
-  renderSchemesGrid();
-}
-
-/* ==========================================================================
-   Event Listeners Setup
-   ========================================================================== */
 function setupEventListeners() {
-  // Navigation Links
-  document.querySelectorAll('.nav-link, .mobile-nav-item').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const target = link.dataset.screen;
-      if (target) switchScreen(target);
-    });
-  });
-
-  // Language Selector
-  const langSelect = document.getElementById('lang-selector-select');
-  if (langSelect) {
-    langSelect.addEventListener('change', (e) => {
-      handleLanguageChange(e.target.value);
-    });
-  }
-
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      window.appState.activeTab = btn.dataset.tab;
-      renderSchemesGrid();
-    });
-  });
-
-  // Search Field with debounce
-  const searchInput = document.getElementById('main-scheme-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      window.appState.searchQuery = e.target.value;
-      renderSchemesGrid();
-    });
-  }
-
-  // Filters
-  const stateSelect = document.getElementById('filter-state');
-  if (stateSelect) {
-    stateSelect.addEventListener('change', (e) => {
-      window.appState.filterState = e.target.value;
-      renderSchemesGrid();
-    });
-  }
-
-  const levelSelect = document.getElementById('filter-gov-level');
-  if (levelSelect) {
-    levelSelect.addEventListener('change', (e) => {
-      window.appState.filterGovLevel = e.target.value;
-      renderSchemesGrid();
-    });
-  }
-
-  const sortSelect = document.getElementById('sort-schemes-by');
-  if (sortSelect) {
-    sortSelect.addEventListener('change', (e) => {
-      window.appState.sortBy = e.target.value;
-      renderSchemesGrid();
-    });
-  }
-
-  // Profile Form Inputs
-  const incomeSlider = document.getElementById('income-slider');
-  if (incomeSlider) {
-    incomeSlider.addEventListener('input', (e) => {
-      const val = parseInt(e.target.value, 10);
-      const display = document.getElementById('income-display-val');
-      if (display) display.textContent = `₹${(val / 100000).toFixed(1)} Lakh / Year`;
-      handleProfileUpdate();
-    });
-  }
-
-  const stateInput = document.getElementById('profile-state');
-  if (stateInput) {
-    stateInput.addEventListener('change', handleProfileUpdate);
-  }
-
-  // AI Chat Input Keydown
-  const chatInput = document.getElementById('chat-user-input');
+  const chatInput = document.getElementById('wa-main-chat-input');
   if (chatInput) {
-    chatInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        handleSendMessage();
-      }
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendUserChatMessage();
     });
   }
 }

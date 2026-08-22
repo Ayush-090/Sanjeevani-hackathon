@@ -1,205 +1,302 @@
 /**
- * Sanjeevani AI Assistant Engine
- * Conversational healthcare intelligence module supporting English, Hindi, and Hinglish.
+ * Sanjeevani AI Assistant Engine — Live Server-Side Sarvam AI (sarvam-105b) Integration
+ * Connects directly to `POST /api/chat` with Supabase profile context, conversation history,
+ * and dynamically generated healthcare answers without any client-side API key exposure.
  */
 
 class SanjeevaniAIAssistant {
   constructor() {
-    this.messages = [];
-    this.isProcessing = false;
-    this.initDefaultMessages();
-  }
-
-  initDefaultMessages() {
-    this.messages = [
+    this.speechSynthesis = window.speechSynthesis || null;
+    this.currentlySpeakingMsgId = null;
+    this.isVoiceRecording = false;
+    this.recognition = null;
+    this.activeThreadId = 'thread-01';
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    
+    // Conversation Threads (Persisted in state)
+    this.threads = [
       {
-        id: "msg-01",
-        sender: "ai",
-        timestamp: "Just now",
-        text: "Namaste Ayush! I am your Sanjeevani Medical Scheme Assistant. Aapko kis healthcare support ya government scheme ki zarurat hai?",
-        chips: [
-          "Find schemes for Punjab",
-          "Family income ₹2.4 Lakh eligibility",
-          "Senior citizen (70+) scheme",
-          "What documents do I need for Ayushman Bharat?",
-          "Free dialysis & cardiac surgery help"
+        id: 'thread-01',
+        title: 'New Conversation',
+        date: 'Today',
+        messages: []
+      },
+      {
+        id: 'thread-02',
+        title: 'Diabetes & Hypertension Care',
+        date: 'Yesterday',
+        messages: [
+          { id: 'm-prev-1', sender: 'user', text: 'Mere diabetes aur BP ke liye generic medicines kahan milengi?', timestamp: 'Yesterday, 04:15 PM' },
+          { id: 'm-prev-2', sender: 'ai', text: 'Aap Pradhan Mantri Bhartiya Janaushadhi Kendra (PMBJP) se Metformin aur Telmisartan 85% discount par le sakte hain. Ludhiana mein 15+ kendras hain.', timestamp: 'Yesterday, 04:16 PM' }
         ]
       }
     ];
+
+    this.initSpeechRecognition();
+    this.initWelcomeMessage('thread-01');
   }
 
-  /**
-   * Process a user query with intent matching, dynamic eligibility analysis, and multi-step progress
-   */
+  initWelcomeMessage(threadId) {
+    const thread = this.threads.find(t => t.id === threadId);
+    if (!thread) return;
+
+    if (thread.messages.length === 0) {
+      thread.messages.push({
+        id: 'msg-welcome-' + Date.now(),
+        sender: 'ai',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: `**Namaste! 👋**\n\nMain Sanjeevani AI hoon (Powered by Sarvam AI 105B). Aapke health profile ke basis par main healthcare information aur relevant government health schemes find karne mein help kar sakta hoon.\n\nAap Hindi, English ya Hinglish mein bol kar ya type karke baat kar sakte hain.`,
+        showContextCard: true,
+        showQuickChips: true,
+        chips: [
+          "🔍 Find schemes for me",
+          "✅ Check my eligibility",
+          "🆕 New government schemes",
+          "🔄 Recently updated schemes",
+          "📄 Required documents",
+          "🏥 Healthcare support"
+        ]
+      });
+    }
+  }
+
+  getActiveMessages() {
+    const thread = this.threads.find(t => t.id === this.activeThreadId);
+    return thread ? thread.messages : [];
+  }
+
+  createThread(customTitle = 'New Conversation') {
+    const newId = 'thread-' + Date.now();
+    const newThread = {
+      id: newId,
+      title: customTitle,
+      date: 'Just now',
+      messages: []
+    };
+    this.threads.unshift(newThread);
+    this.activeThreadId = newId;
+    this.initWelcomeMessage(newId);
+    return newThread;
+  }
+
+  switchThread(threadId) {
+    this.activeThreadId = threadId;
+    this.initWelcomeMessage(threadId);
+  }
+
+  /* ==========================================================================
+     MediaRecorder Web Audio Stream Recording
+     ========================================================================== */
+  async startAudioRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.audioChunks = [];
+      
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+        ? 'audio/webm;codecs=opus' 
+        : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4');
+
+      this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+      this.mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          this.audioChunks.push(event.data);
+        }
+      };
+
+      this.mediaRecorder.start(250);
+      this.isVoiceRecording = true;
+      return true;
+    } catch (e) {
+      console.warn('Microphone permission or MediaRecorder not available:', e);
+      return false;
+    }
+  }
+
+  async stopAudioRecording() {
+    return new Promise((resolve) => {
+      if (!this.mediaRecorder) {
+        resolve(null);
+        return;
+      }
+
+      this.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+        this.audioChunks = [];
+        this.isVoiceRecording = false;
+
+        if (this.mediaRecorder.stream) {
+          this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+
+        resolve(audioBlob);
+      };
+
+      this.mediaRecorder.stop();
+    });
+  }
+
+  /* ==========================================================================
+     Server-Side Voice Transcription API (`POST /api/voice/transcribe`)
+     ========================================================================== */
+  async transcribeAudioWithServer(audioBlob, languageCode = 'hi-IN') {
+    try {
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'voice_recording.webm');
+      formData.append('language_code', languageCode);
+
+      const response = await fetch('/api/voice/transcribe', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.transcript || null;
+    } catch (err) {
+      console.error('Server-side transcription error:', err);
+      return null;
+    }
+  }
+
+  /* ==========================================================================
+     Speech Synthesis (Text-to-Speech / 🔊 Listen Button)
+     ========================================================================== */
+  speakText(text, msgId, onEndCallback) {
+    if (!this.speechSynthesis) {
+      alert('Speech synthesis is not supported in this browser.');
+      return;
+    }
+
+    if (this.speechSynthesis.speaking && this.currentlySpeakingMsgId === msgId) {
+      this.speechSynthesis.cancel();
+      this.currentlySpeakingMsgId = null;
+      if (onEndCallback) onEndCallback(false);
+      return;
+    }
+
+    this.speechSynthesis.cancel();
+
+    // Clean markdown symbols for natural speech
+    const cleanText = text.replace(/[*#_`>✓🏛️🟢🟡🔵⚠️]/g, '').trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    const voices = this.speechSynthesis.getVoices();
+    const hindiVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN'));
+    if (hindiVoice) utterance.voice = hindiVoice;
+    utterance.rate = 0.95;
+
+    this.currentlySpeakingMsgId = msgId;
+
+    utterance.onend = () => {
+      this.currentlySpeakingMsgId = null;
+      if (onEndCallback) onEndCallback(false);
+    };
+
+    utterance.onerror = () => {
+      this.currentlySpeakingMsgId = null;
+      if (onEndCallback) onEndCallback(false);
+    };
+
+    this.speechSynthesis.speak(utterance);
+    if (onEndCallback) onEndCallback(true);
+  }
+
+  stopSpeaking() {
+    if (this.speechSynthesis) {
+      this.speechSynthesis.cancel();
+      this.currentlySpeakingMsgId = null;
+    }
+  }
+
+  /* ==========================================================================
+     Browser Web Speech Recognition Fallback
+     ========================================================================== */
+  initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = true;
+      this.recognition.lang = 'hi-IN';
+    }
+  }
+
+  /* ==========================================================================
+     Live Sarvam AI Chat API Call (`POST /api/chat`)
+     ========================================================================== */
   async processQuery(userInput, userProfile, schemesDatabase, onProgressUpdate) {
     const trimmed = userInput.trim();
     if (!trimmed) return null;
 
+    const thread = this.threads.find(t => t.id === this.activeThreadId);
+    if (!thread) return null;
+
+    // Update thread title if first user query
+    if (thread.messages.filter(m => m.sender === 'user').length === 0) {
+      thread.title = trimmed.length > 28 ? trimmed.substring(0, 25) + '...' : trimmed;
+    }
+
     const userMessage = {
-      id: "msg-" + Date.now(),
-      sender: "user",
+      id: 'msg-u-' + Date.now(),
+      sender: 'user',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       text: trimmed
     };
-    this.messages.push(userMessage);
+    thread.messages.push(userMessage);
 
-    // Multi-step progress simulation
-    const progressSteps = [
-      "Understanding citizen profile & clinical context...",
-      "Matching against Central & State scheme registries...",
-      "Evaluating income & categorical criteria...",
-      "Synthesizing verified recommendations..."
-    ];
+    if (onProgressUpdate) {
+      onProgressUpdate("Sanjeevani AI is thinking...", 50);
+    }
 
-    for (let i = 0; i < progressSteps.length; i++) {
-      if (onProgressUpdate) {
-        onProgressUpdate(progressSteps[i], (i + 1) * 25);
+    try {
+      // Call Server-Side Sarvam AI API route
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: trimmed,
+          history: thread.messages.slice(-12),
+          profile: userProfile
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
       }
-      await new Promise(res => setTimeout(res, 450));
-    }
 
-    const response = this.generateResponse(trimmed, userProfile, schemesDatabase);
-    this.messages.push(response);
-    return response;
-  }
+      const data = await response.json();
 
-  generateResponse(query, profile, schemes) {
-    const qLower = query.toLowerCase();
-    const isHinglish = /meri|mera|aap|karo|chahiye|paisa|ilaaj|aspataal|punjab|lakh|dawa|bima|kahan|kaise/i.test(query);
-
-    // Intent 1: Income / Hospital treatment / Punjab / Ayushman inquiry
-    if (qLower.includes("2.5 lakh") || qLower.includes("income") || qLower.includes("punjab") || qLower.includes("hospital") || qLower.includes("treatment")) {
-      const pmjay = schemes.find(s => s.id === "pmjay");
-      const sarbat = schemes.find(s => s.id === "sarbat-sehat");
-      const janaushadhi = schemes.find(s => s.id === "pmbjp");
-
-      return {
-        id: "msg-ai-" + Date.now(),
-        sender: "ai",
+      const aiResponse = {
+        id: 'msg-ai-' + Date.now(),
+        sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: isHinglish 
-          ? "Aapki family income (₹2.4-2.5 Lakh) aur Punjab residence ke basis par 2 flagship government health schemes aur 1 pharmacy scheme highly relevant hain. Main inka criteria compare karke summary de raha hoon:"
-          : "Based on your family income bracket and Punjab residence, you have high potential eligibility for Ayushman Bharat PM-JAY and Punjab's Mukh Mantri Sehat Bima Yojana, offering comprehensive cashless hospital coverage up to ₹5 Lakh/year.",
-        reasoningPoints: [
-          "✓ Location: Punjab (Ludhiana District) satisfies convergent state assurance network",
-          "✓ Income: Below the ₹2,50,000 threshold for subsidized public health protection",
-          "✓ Clinical Need: Covers tertiary and secondary hospital surgeries & diagnostic admissions",
-          "✓ NFSA Blue Card / Priority Household status ensures direct eligibility linkage"
-        ],
-        statusTag: "Likely Eligible",
-        statusTagClass: "status-tag-eligible",
-        matchedSchemes: [pmjay, sarbat, janaushadhi].filter(Boolean),
-        nextSteps: [
-          "Verify your name in the Ayushman beneficiary database using your Aadhaar or Ration Card.",
-          "Visit the nearest Empaneled Hospital or Kisan Seva Kendra with original Aadhaar & NFSA card.",
-          "Generate your golden e-card for immediate cashless admission."
-        ],
-        disclaimer: "Informational match based on provided data. Final e-KYC and authorization is completed via the official NHA / State Health Agency portal."
+        text: data.answer || "Main aapki sahayata ke liye tayar hoon. Please apna sawal poochein.",
+        matchedSchemes: data.schemes || []
       };
-    }
 
-    // Intent 2: Senior citizen / 70+ years (Ayushman Vay Vandana)
-    if (qLower.includes("senior") || qLower.includes("70") || qLower.includes("elderly") || qLower.includes("bujurg") || qLower.includes("vay vandana")) {
-      const vayVandana = schemes.find(s => s.id === "pmjay-vav");
-      return {
-        id: "msg-ai-" + Date.now(),
-        sender: "ai",
+      thread.messages.push(aiResponse);
+      return aiResponse;
+
+    } catch (err) {
+      console.error('Error connecting to /api/chat:', err);
+
+      const fallbackResponse = {
+        id: 'msg-ai-' + Date.now(),
+        sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: isHinglish
-          ? "Agar aapke parivaar mein 70 saal ya usse adhik aayu ke bujurg hain, to unke liye nayi 'Ayushman Vay Vandana Yojana' bina kisi income restriction ke poori tarah se lagu hai."
-          : "For senior citizens aged 70 and above, the newly introduced Ayushman Bharat Vay Vandana scheme provides a dedicated ₹5 Lakh/year health cover with universal eligibility (no income ceiling).",
-        reasoningPoints: [
-          "✓ Universal Eligibility: Every citizen aged 70+ qualifies regardless of family economic status",
-          "✓ Separate Top-up: Does not deduct from the family's regular PM-JAY ₹5L cover",
-          "✓ Geriatric Care: Includes chronic disease management, joint replacements, and ICU care"
-        ],
-        statusTag: "Universal Benefit (70+)",
-        statusTagClass: "status-tag-eligible",
-        matchedSchemes: [vayVandana].filter(Boolean),
-        nextSteps: [
-          "Complete biometric or OTP-based e-KYC using the senior member's Aadhaar.",
-          "Download the Vay Vandana Golden Card instantly from beneficiary.nha.gov.in."
-        ],
-        disclaimer: "Age verification via Aadhaar date of birth is mandatory during enrollment."
+        text: "Sorry, abhi Sanjeevani AI se response nahi mil pa raha. Please try again.",
+        matchedSchemes: []
       };
+
+      thread.messages.push(fallbackResponse);
+      return fallbackResponse;
     }
-
-    // Intent 3: Documents required
-    if (qLower.includes("document") || qLower.includes("kagaz") || qLower.includes("aadhaar") || qLower.includes("proof")) {
-      return {
-        id: "msg-ai-" + Date.now(),
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: isHinglish
-          ? "Government health schemes (jaise Ayushman Bharat aur State Sehat Bima) ke liye aamtaur par nimnalikhit verified documents ki zaroorat hoti hai:"
-          : "To apply for or verify eligibility across central and state healthcare schemes, you will typically need the following primary documents:",
-        reasoningPoints: [
-          "1. Identity & Age Proof: Aadhaar Card (Mandatory for biometric e-KYC)",
-          "2. Family Beneficiary Linkage: Ration Card (NFSA / Blue Card / State Family ID)",
-          "3. Income Verification: Income Certificate issued by Tehsildar / Sub-Divisional Magistrate",
-          "4. State Domicile: Punjab Residence Proof or Voter ID",
-          "5. Clinical Records: Hospital OPD slip, treatment estimate, or doctor prescription (for special grants/dialysis)"
-        ],
-        statusTag: "Document Checklist",
-        statusTagClass: "status-tag-info",
-        matchedSchemes: [],
-        nextSteps: [
-          "You can upload and organize these in Sanjeevani's 'My Documents' section for automated pre-verification."
-        ],
-        disclaimer: "Carrying original physical cards at the time of hospital admission is recommended."
-      };
-    }
-
-    // Intent 4: Dialysis, Kidney, Critical care, RAN
-    if (qLower.includes("dialysis") || qLower.includes("kidney") || qLower.includes("cancer") || qLower.includes("rare") || qLower.includes("critical") || qLower.includes("heart")) {
-      const pmndp = schemes.find(s => s.id === "pmndp");
-      const ran = schemes.find(s => s.id === "ran");
-      const pmjay = schemes.find(s => s.id === "pmjay");
-
-      return {
-        id: "msg-ai-" + Date.now(),
-        sender: "ai",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: isHinglish
-          ? "Gambhir bimariyon (jaise Dialysis, Cardiac Surgery, ya Cancer) ke liye government do tarah se sahayata pradan karti hai — cashless hospital packages aur direct grants:"
-          : "For critical care and chronic treatments (such as Hemodialysis, Cardiac Interventions, or Oncology), both cashless packages and specialized direct grants are available for eligible citizens:",
-        reasoningPoints: [
-          "✓ National Dialysis Programme: 100% Free hemodialysis at District Civil Hospitals for BPL/Ayushman beneficiaries",
-          "✓ PM-JAY / Sehat Bima: Comprehensive pre-authorized cashless packages for open-heart surgery, stents, and chemotherapies",
-          "✓ Rashtriya Arogya Nidhi (RAN): One-time financial assistance up to ₹50 Lakh for life-threatening conditions at AIIMS/PGI"
-        ],
-        statusTag: "Critical Care Coverage",
-        statusTagClass: "status-tag-eligible",
-        matchedSchemes: [pmndp, ran, pmjay].filter(Boolean),
-        nextSteps: [
-          "Obtain an official medical certificate and cost estimate proforma from the treating government hospital.",
-          "Submit the estimate to the Medical Superintendent office or Sanjeevani Assisted Helpdesk."
-        ],
-        disclaimer: "RAN grants require institutional application directly from empaneled central government hospitals."
-      };
-    }
-
-    // Default Fallback
-    const topSchemes = schemes.slice(0, 3);
-    return {
-      id: "msg-ai-" + Date.now(),
-      sender: "ai",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text: isHinglish
-        ? `Aapke prashn ke aadhar par maine aapki profile (Punjab, ₹2.4 Lakh Income) ko scan kiya hai. Aapke liye sabse upyogi schemes yeh hain:`
-        : `Based on your query and current profile (Resident of Punjab, Income ₹2.4L), here are the most relevant government health schemes curated for you:`,
-      reasoningPoints: [
-        `✓ Socio-economic match: Income tier matches priority criteria for Ayushman & State Sehat Bima`,
-        `✓ Geographic validity: Punjab empaneled network covers over 900+ tertiary healthcare centers`,
-        `✓ Direct generic medicine subsidy available via Janaushadhi network`
-      ],
-      statusTag: "Potentially Eligible",
-      statusTagClass: "status-tag-eligible",
-      matchedSchemes: topSchemes,
-      nextSteps: [
-        "Select any scheme below to view detailed benefit schedules, document checklists, and official application portals."
-      ],
-      disclaimer: "Sanjeevani AI provides informational guidance. Final eligibility and approval are determined by the concerned government authority."
-    };
   }
 }

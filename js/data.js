@@ -1,113 +1,236 @@
 /**
- * Sanjeevani - Government Medical Scheme Intelligence Database
- * Rich, authentic dataset of Indian central and state healthcare schemes, updates, and initial user context.
+ * Sanjeevani — Unified Healthcare & Government Medical Scheme Intelligence Database
+ * Integrates Core Sanjeevani (Patient Profile, Medical Records, Vitals, Doctors, Consent Management)
+ * with Government Medical Scheme Intelligence (Central/State Registry, Eligibility, Intelligence Feed, Schema Entities).
  */
 
 const SANJEEVANI_DATA = {
+  // Existing Sanjeevani Patient Profile
   currentUser: {
+    id: "pat-ayush-090",
     name: "Ayush Bhardwaj",
-    age: 38,
+    age: 58,
     gender: "Male",
+    bloodGroup: "B+",
+    phone: "+91 98765 43210",
+    email: "ayush.bhardwaj@email.com",
+    abhaId: "91-8821-4920-1102@abdm",
     state: "Punjab",
     district: "Ludhiana",
     pincode: "141001",
-    familyIncome: 240000, // INR 2.4 Lakh
-    incomeCategory: "Low Income / Priority Household",
-    occupation: "Self-Employed / Small Agriculture",
-    rationCardType: "Priority Household (PHH)",
+    familyIncome: 250000, // ₹2.5 Lakh
+    incomeCategory: "Priority Household / Low-Income Tier",
+    occupation: "Small Agriculture / Self-Employed",
+    rationCardType: "NFSA Blue Card (PHH)",
     bplStatus: true,
-    familyMembersCount: 4,
-    healthConditions: ["Hypertension", "Hospital Treatment Required", "Cardiology Consultation Needed"],
-    criticalNeeds: ["Cashless Hospitalization", "Diagnostic Coverage", "Affordable Medicines"],
-    disabilityStatus: "None",
-    seniorCitizenInFamily: true
+    seniorCitizenInFamily: true,
+    vitals: {
+      bloodPressure: "138/88 mmHg",
+      bloodSugarFasting: "142 mg/dL",
+      hba1c: "7.4%",
+      bmi: "24.6",
+      heartRate: "74 bpm",
+      spO2: "98%"
+    },
+    chronicConditions: ["Type 2 Diabetes Mellitus", "Stage 1 Essential Hypertension", "Cardiac Evaluation Advised"],
+    allergies: ["Penicillin", "Sulfa Drugs"],
+    activeMedications: [
+      { name: "Metformin 500mg", dosage: "1 tablet after dinner", duration: "Ongoing" },
+      { name: "Telmisartan 40mg", dosage: "1 tablet morning", duration: "Ongoing" },
+      { name: "Atorvastatin 10mg", dosage: "1 tablet bedtime", duration: "Ongoing" }
+    ]
   },
 
+  // Existing Sanjeevani Medical Records & Lab Reports
+  medicalRecords: [
+    {
+      id: "rec-01",
+      title: "Comprehensive Metabolic & Lipid Panel",
+      category: "Lab Report",
+      date: "14 Aug 2026",
+      facility: "Apex Diagnostic & Wellness, Ludhiana",
+      doctor: "Dr. H. S. Sharma",
+      summary: "Elevated Fasting Blood Sugar (142 mg/dL) and HbA1c (7.4%). Lipid values within borderline control.",
+      status: "Verified",
+      fileType: "PDF",
+      fileSize: "1.4 MB"
+    },
+    {
+      id: "rec-02",
+      title: "Electrocardiogram (ECG) & Echo Screening",
+      category: "Diagnostic Scan",
+      date: "02 Aug 2026",
+      facility: "District Civil Hospital, Ludhiana",
+      doctor: "Dr. Arvind Gill",
+      summary: "Normal sinus rhythm with mild left ventricular hypertrophy secondary to chronic hypertension.",
+      status: "Verified",
+      fileType: "PDF",
+      fileSize: "2.8 MB"
+    },
+    {
+      id: "rec-03",
+      title: "Cardiology & Diabetology Prescription Slip",
+      category: "Prescription",
+      date: "02 Aug 2026",
+      facility: "Civil Hospital OPD",
+      doctor: "Dr. H. S. Sharma",
+      summary: "Advised generic Metformin + Telmisartan combination. Recommended enrollment into PM-JAY / Sehat Bima for subsidized cardiology consultations.",
+      status: "Verified",
+      fileType: "PDF",
+      fileSize: "840 KB"
+    },
+    {
+      id: "rec-04",
+      title: "Renal Function & Serum Creatinine Test",
+      category: "Lab Report",
+      date: "18 Jun 2026",
+      facility: "Civil Hospital Diagnostic Wing",
+      doctor: "Dr. Neha Verma",
+      summary: "Serum Creatinine: 1.1 mg/dL, eGFR > 85. Kidney function stable.",
+      status: "Verified",
+      fileType: "PDF",
+      fileSize: "920 KB"
+    }
+  ],
+
+  // Existing Sanjeevani Empaneled Doctors & Specialists
+  doctors: [
+    {
+      id: "doc-01",
+      name: "Dr. H. S. Sharma",
+      specialty: "Senior Consultant Cardiologist & Physician",
+      hospital: "District Civil Hospital & Fortis Escorts, Ludhiana",
+      experience: "22 Years Exp",
+      rating: "4.9 (420+ Consultations)",
+      languages: "English, Hindi, Punjabi",
+      availableTime: "Mon - Sat (10:00 AM - 04:00 PM)",
+      image: "👨‍⚕️"
+    },
+    {
+      id: "doc-02",
+      name: "Dr. Arvind Gill",
+      specialty: "Endocrinologist & Diabetes Specialist",
+      hospital: "Dayanand Medical College (DMC) Hospital, Ludhiana",
+      experience: "16 Years Exp",
+      rating: "4.8 (310+ Consultations)",
+      languages: "English, Punjabi",
+      availableTime: "Mon - Fri (11:00 AM - 05:00 PM)",
+      image: "👨‍⚕️"
+    },
+    {
+      id: "doc-03",
+      name: "Dr. Neha Verma",
+      specialty: "General Medicine & Chronic Disease Specialist",
+      hospital: "Kisan Health Center, Model Town, Ludhiana",
+      experience: "12 Years Exp",
+      rating: "4.9 (560+ Consultations)",
+      languages: "English, Hindi",
+      availableTime: "Daily (09:00 AM - 02:00 PM)",
+      image: "👩‍⚕️"
+    }
+  ],
+
+  // Granular Patient-Doctor Consents
+  activeConsents: [
+    {
+      id: "con-01",
+      doctorName: "Dr. H. S. Sharma",
+      doctorId: "doc-01",
+      purpose: "Cardiac Follow-up & Treatment Scheme Verification",
+      sharedRecords: ["Lab Report: Metabolic & Lipid Panel", "Prescription: Cardiology Slip", "ECG Diagnostic Scan"],
+      validUntil: "29 Aug 2026 (7 Days Access)",
+      status: "Active",
+      grantedDate: "22 Aug 2026"
+    }
+  ],
+
+  // Structured Government Schemes Database (Source of Truth)
   schemes: [
     {
       id: "pmjay",
       name: "Ayushman Bharat PM-JAY",
       hindiName: "आयुष्मान भारत - प्रधानमंत्री जन आरोग्य योजना",
       category: "Central Government",
-      governmentLevel: "Central",
+      governmentLevel: "Central & State Convergence",
       state: "All India",
-      status: "Active", // Active, Newly Introduced, Recently Updated
+      status: "Active",
       statusType: "active",
       matchScore: 96,
+      eligibilityTag: "Likely Eligible",
+      eligibilityTagClass: "status-tag-eligible",
       whyMatch: [
-        "Annual family income (₹2.4L) is below SECC 2011 / State Deprivation threshold",
-        "Punjab is a participating state under the Ayushman Bharat convergence",
-        "Covers secondary and tertiary hospitalization required for cardiac & general surgery",
-        "Valid Ration Card (PHH) satisfies family identification criteria"
+        "Annual family income (₹2.5L) matches priority deprivation threshold",
+        "Punjab state residency with NFSA Priority Blue Card satisfies identification",
+        "Covers pre-existing diabetes and cardiac hospitalization from Day 1 with zero waiting period",
+        "Includes cashless coverage at 28,000+ public and private hospitals nationwide"
       ],
-      shortSummary: "World's largest government-funded healthcare assurance scheme offering ₹5 Lakh per family per year for secondary and tertiary care.",
-      fullDescription: "Ayushman Bharat Pradhan Mantri Jan Arogya Yojana (PM-JAY) provides a health cover of Rs. 5 lakhs per family per year for secondary and tertiary care hospitalization to over 12 crore poor and vulnerable families (approximately 55 crore beneficiaries) that form the bottom 40% of the Indian population.",
+      shortSummary: "World's largest government-funded healthcare assurance scheme offering ₹5 Lakh per family per year for secondary and tertiary hospitalization.",
+      fullDescription: "PM-JAY provides health assurance of ₹5 Lakh per family per year to eligible households, completely cashless and paperless across all empaneled public and private hospitals.",
       benefits: [
-        "₹5,00,000 annual cashless health coverage per family",
-        "Covers 1,949+ medical procedures including surgeries, oncology, and cardiology",
-        "Pre-existing illnesses covered from Day 1 with zero waiting period",
-        "Includes 3 days pre-hospitalization and 15 days post-hospitalization expenses",
-        "Paperless and cashless treatment across 28,000+ empaneled private & public hospitals nationwide"
+        "₹5,00,000 annual cashless cover per family",
+        "Covers 1,949+ surgical & medical treatment procedures including cardiology & oncology",
+        "Includes 3 days pre-hospitalization and 15 days post-hospitalization diagnostics & medications",
+        "Pre-existing illnesses (like Diabetes and Hypertension) covered from Day 1",
+        "Portability across India — valid at AIIMS, PGI Chandigarh, and private networks"
       ],
       eligibilityCriteria: {
-        incomeLimit: "₹2,50,000/yr (or SECC 2011 identified)",
-        ageGroup: "All age groups covered",
-        residence: "All Indian States & UTs (Except Delhi/WB having state equivalents)",
-        targetGroup: "Rural deprivation criteria D1-D7 & Urban occupational categories"
+        incomeLimit: "₹2,50,000/yr (or SECC 2011 Deprivation / NFSA Blue Card)",
+        ageGroup: "All Age Groups",
+        residence: "Indian Citizen / Participating States",
+        targetGroup: "Rural D1-D7 criteria and urban low-income occupational categories"
       },
       requiredDocuments: [
-        { name: "Aadhaar Card", required: true, status: "Available" },
-        { name: "Ration Card (NFSA/PHH) or Family ID", required: true, status: "Available" },
-        { name: "Income Certificate / Self Declaration", required: true, status: "Available" },
-        { name: "Doctor Referral / Hospital Admission Slip", required: false, status: "Pending" }
+        { name: "Aadhaar Card", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "NFSA Blue Ration Card", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Income Certificate (Tehsildar Verified)", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Doctor Referral Slip", required: false, status: "Prescription Available" }
       ],
       officialSource: "National Health Authority (NHA), MoHFW",
       officialUrl: "https://pmjay.gov.in",
       helpline: "14555",
-      lastVerifiedDate: "18 Aug 2026",
-      updatedBadge: "Recently Updated: Senior Care Expansion",
+      lastVerifiedDate: "20 Aug 2026",
       coveredHospitalsInDistrict: 24,
       schemeType: "Cashless Health Assurance"
     },
     {
       id: "pmjay-vav",
-      name: "Ayushman Bharat - Vay Vandana Extension",
+      name: "Ayushman Bharat - Vay Vandana Extension (70+ Seniors)",
       hindiName: "आयुष्मान वय वंदना योजना (70+ वरिष्ठ नागरिक)",
       category: "Senior Citizen Special",
       governmentLevel: "Central",
       state: "All India",
       status: "Newly Introduced",
       statusType: "new",
-      matchScore: 91,
+      matchScore: 92,
+      eligibilityTag: "Universal Benefit (70+)",
+      eligibilityTagClass: "status-tag-eligible",
       whyMatch: [
-        "Senior citizen (70+ years) present in your family profile",
-        "Universal coverage regardless of family income cap for citizens aged 70+",
-        "Provides distinct top-up cover for geriatric care and chronic illness"
+        "Senior citizen (70+ years) present in your Sanjeevani family profile",
+        "Universal eligibility with ZERO income restrictions for any citizen aged 70+",
+        "Separate dedicated ₹5L cover that does not exhaust family PM-JAY balance"
       ],
       shortSummary: "Universal healthcare extension providing an exclusive ₹5 Lakh/year top-up health cover to all senior citizens aged 70 and above.",
-      fullDescription: "Launched under the Union Cabinet expansion, every senior citizen aged 70 years and above is eligible to receive free health insurance coverage of up to ₹5 lakh per year, irrespective of their socio-economic status. Families with elderly members get a dedicated top-up card.",
+      fullDescription: "Launched under the Union Cabinet expansion, every senior citizen aged 70+ receives a free, distinct Ayushman Vay Vandana golden card for geriatric, orthopedic, and chronic disease coverage.",
       benefits: [
-        "Dedicated ₹5,00,000 separate annual cover for members aged 70+",
-        "No income ceiling or wealth criteria required",
-        "Includes intensive geriatric care, orthopedic joint replacements, and stroke care",
-        "Instant Ayushman Vay Vandana golden card generation via Aadhaar e-KYC"
+        "Dedicated ₹5,00,000 separate annual health cover for members aged 70+",
+        "No income ceiling or wealth threshold applicable",
+        "Direct self-registration via Aadhaar biometric e-KYC on the NHA portal",
+        "Covers senior intensive care, stroke management, and joint replacements"
       ],
       eligibilityCriteria: {
         incomeLimit: "No income limit (Universal for 70+)",
         ageGroup: "70 Years and Above",
-        residence: "Indian Citizen",
-        targetGroup: "All senior citizens aged 70+"
+        residence: "All Indian States",
+        targetGroup: "All Senior Citizens aged 70+"
       },
       requiredDocuments: [
-        { name: "Aadhaar Card (Proof of Age 70+)", required: true, status: "Available" },
-        { name: "Active Mobile Number linked to Aadhaar", required: true, status: "Available" },
-        { name: "Recent Passport Size Photograph", required: true, status: "Available" }
+        { name: "Aadhaar Card (Proof of Age 70+)", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Aadhaar Linked Mobile for OTP", required: true, status: "Verified" }
       ],
-      officialSource: "Ministry of Health and Family Welfare (MoHFW)",
+      officialSource: "Ministry of Health & Family Welfare (MoHFW)",
       officialUrl: "https://beneficiary.nha.gov.in",
       helpline: "14555",
-      lastVerifiedDate: "15 Aug 2026",
-      updatedBadge: "Newly Launched 2026 Expansion",
+      lastVerifiedDate: "18 Aug 2026",
       coveredHospitalsInDistrict: 24,
       schemeType: "Universal Senior Assurance"
     },
@@ -121,249 +244,165 @@ const SANJEEVANI_DATA = {
       status: "Recently Updated",
       statusType: "updated",
       matchScore: 94,
+      eligibilityTag: "Likely Eligible",
+      eligibilityTagClass: "status-tag-eligible",
       whyMatch: [
-        "Resident of Punjab (Ludhiana District)",
-        "Blue Card holder / NFSA Priority Household match",
-        "J-Form Farmer / Small Trader registration recognized",
-        "Provides additional state-empaneled tertiary hospitals in Punjab & Chandigarh"
+        "Resident of Punjab (Ludhiana District) in Sanjeevani profile",
+        "NFSA Blue Card / J-Form farmer category verified",
+        "Empanels 900+ state hospitals including local civil hospital & PGI Chandigarh"
       ],
-      shortSummary: "Punjab state flagship health cover offering ₹5 Lakh per family per year covering 65% of the state's population.",
-      fullDescription: "A comprehensive health protection scheme by the Government of Punjab that merges state health welfare beneficiaries with PM-JAY, covering NFSA ration card holders, J-form holding farmers, small traders registered with Punjab excise department, and accredited journalists.",
+      shortSummary: "Flagship Punjab state health cover offering ₹5 Lakh per family per year covering 65% of the state's population.",
+      fullDescription: "A comprehensive health protection scheme by the Government of Punjab that merges state health welfare beneficiaries with PM-JAY, covering NFSA ration card holders and small farmers.",
       benefits: [
         "₹5 Lakh per family per year cashless treatment",
         "Over 1,600+ surgical and medical packages covered",
-        "Valid across 900+ empanelled public and private hospitals across Punjab and tricity (PGI Chandigarh)",
-        "Pre-authorized cashless emergency support at all district civil hospitals"
+        "Zero out-of-pocket expenses at district civil hospitals",
+        "Direct emergency admission authorization"
       ],
       eligibilityCriteria: {
-        incomeLimit: "NFSA Blue Card holders / Farmers with J-form / Small Traders < ₹6L turnover",
-        ageGroup: "All age groups",
+        incomeLimit: "NFSA Blue Card holders / Farmers with J-form / Small Traders",
+        ageGroup: "All Age Groups",
         residence: "Punjab Domicile",
-        targetGroup: "NFSA cardholders, Farmers, Construction workers, Small shopkeepers"
+        targetGroup: "NFSA cardholders, Farmers, Construction workers"
       },
       requiredDocuments: [
-        { name: "Aadhaar Card", required: true, status: "Available" },
-        { name: "Punjab Smart Ration Card (Blue Card)", required: true, status: "Available" },
-        { name: "J-Form or Punjab Resident Proof", required: true, status: "Available" }
+        { name: "Aadhaar Card", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Punjab Smart Ration Card (Blue Card)", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Punjab Domicile Proof", required: true, status: "Available in Sanjeevani Vault" }
       ],
-      officialSource: "State Health Agency, Department of Health & Family Welfare Punjab",
+      officialSource: "State Health Agency (SHA), Punjab",
       officialUrl: "https://shapunjab.in",
       helpline: "104",
-      lastVerifiedDate: "12 Aug 2026",
-      updatedBadge: "Updated: 150 New Packages Added",
+      lastVerifiedDate: "15 Aug 2026",
       coveredHospitalsInDistrict: 18,
       schemeType: "State Health Assurance"
-    },
-    {
-      id: "pmndp",
-      name: "Pradhan Mantri National Dialysis Programme (PMNDP)",
-      hindiName: "प्रधानमंत्री राष्ट्रीय डायलिसिस कार्यक्रम",
-      category: "Specialized Care",
-      governmentLevel: "Central & State Convergence",
-      state: "All India",
-      status: "Active",
-      statusType: "active",
-      matchScore: 82,
-      whyMatch: [
-        "Free hemodialysis & peritoneal dialysis access for BPL/EWS patients",
-        "Available at District Hospital Ludhiana with zero out-of-pocket payment",
-        "No waiting period or complicated pre-authorization"
-      ],
-      shortSummary: "Free dialysis services for Below Poverty Line (BPL) patients across all District Civil Hospitals in India.",
-      fullDescription: "The Pradhan Mantri National Dialysis Programme was rolled out under the National Health Mission (NHM) to provide free dialysis services to poor patients through public-private partnership (PPP) modes at district hospitals nationwide.",
-      benefits: [
-        "100% Free Hemodialysis and Peritoneal Dialysis for BPL patients",
-        "Subsidized at non-BPL nominal rates for general public",
-        "Free routine laboratory tests during dialysis cycles",
-        "Covers essential dialysis consumables and EPO injections"
-      ],
-      eligibilityCriteria: {
-        incomeLimit: "BPL card holders receive 100% free service",
-        ageGroup: "All ages requiring renal replacement therapy",
-        residence: "Any Indian state",
-        targetGroup: "Chronic Kidney Disease (CKD Stage 5) patients"
-      },
-      requiredDocuments: [
-        { name: "Aadhaar Card", required: true, status: "Available" },
-        { name: "BPL Certificate / Ayushman Card", required: true, status: "Available" },
-        { name: "Nephrologist Referral & Serum Creatinine Reports", required: true, status: "Pending" }
-      ],
-      officialSource: "National Health Mission (NHM), MoHFW",
-      officialUrl: "https://nhm.gov.in/index1.php?lang=1&level=2&sublinkid=1054&lid=609",
-      helpline: "1800-180-1104",
-      lastVerifiedDate: "05 Aug 2026",
-      updatedBadge: "Active in 600+ Districts",
-      coveredHospitalsInDistrict: 3,
-      schemeType: "Specialized Free Treatment"
-    },
-    {
-      id: "ran",
-      name: "Rashtriya Arogya Nidhi (RAN) & Rare Diseases Financial Support",
-      hindiName: "राष्ट्रीय आरोग्य निधि (दुर्लभ एवं गंभीर रोग सहायता)",
-      category: "Tertiary Life-Threatening Care",
-      governmentLevel: "Central",
-      state: "All India",
-      status: "Recently Updated",
-      statusType: "updated",
-      matchScore: 78,
-      whyMatch: [
-        "Applicable for BPL families facing super-specialty treatment costs beyond normal covers",
-        "One-time financial grant of up to ₹50 Lakh for rare diseases and life-threatening conditions",
-        "Valid at premier institutes like AIIMS, PGI Chandigarh"
-      ],
-      shortSummary: "One-time financial assistance of up to ₹15-50 Lakh for poor patients suffering from major life-threatening diseases at premier government hospitals.",
-      fullDescription: "Rashtriya Arogya Nidhi provides financial assistance to patients living below the poverty line who are suffering from major life-threatening diseases relating to heart, kidney, liver, cancer, and rare congenital disorders for treatment at designated super-specialty government hospitals.",
-      benefits: [
-        "Direct one-time grant up to ₹15 Lakh for critical organ surgeries / cancer care",
-        "Up to ₹50 Lakh for Rare Diseases Group 1-3 under National Rare Disease Policy",
-        "Direct fund disbursement to the treating government institute/hospital",
-        "Includes emergency medicines and implants not covered under standard packages"
-      ],
-      eligibilityCriteria: {
-        incomeLimit: "Family income below official state BPL threshold",
-        ageGroup: "All ages",
-        residence: "Indian Citizen",
-        targetGroup: "Patients with life-threatening ailments treated at Central Gov institutes"
-      },
-      requiredDocuments: [
-        { name: "Income Certificate issued by Revenue Authority (Tehsildar/SDM)", required: true, status: "Available" },
-        { name: "Ration Card copy", required: true, status: "Available" },
-        { name: "Hospital Estimate & Application Proforma signed by Medical Superintendent", required: true, status: "Pending" }
-      ],
-      officialSource: "Ministry of Health and Family Welfare (MoHFW)",
-      officialUrl: "https://mohfw.gov.in/major-programmes/other-national-health-programmes/rashtriya-arogya-nidhi",
-      helpline: "011-23061986",
-      lastVerifiedDate: "10 Jul 2026",
-      updatedBadge: "Grant Limit Enhanced to ₹50L",
-      coveredHospitalsInDistrict: 2,
-      schemeType: "Direct Financial Medical Grant"
-    },
-    {
-      id: "pmsma",
-      name: "Pradhan Mantri Surakshit Matritva Abhiyan (PMSMA)",
-      hindiName: "प्रधानमंत्री सुरक्षित मातृत्व अभियान",
-      category: "Maternal & Child Health",
-      governmentLevel: "Central",
-      state: "All India",
-      status: "Active",
-      statusType: "active",
-      matchScore: 70,
-      whyMatch: [
-        "Universal free antenatal care (ANC) for pregnant women on 9th of every month",
-        "Free ultrasound, lab tests, and specialist OB-GYN consultations at public centers",
-        "Maternal welfare scheme with cash incentive linkages"
-      ],
-      shortSummary: "Comprehensive, guaranteed, quality antenatal care provided free of cost to all pregnant women on the 9th of every month.",
-      fullDescription: "A national flagship initiative to ensure comprehensive and quality antenatal care, free diagnostic tests, and specialist counseling for pregnant women in their 2nd and 3rd trimesters at designated government health facilities.",
-      benefits: [
-        "Free high-risk pregnancy screening by OB-GYN specialists",
-        "Zero-cost diagnostic tests (Ultrasound, Blood Glucose, Hemoglobin)",
-        "Free iron-folic acid supplements and nutritional guidance",
-        "Integration with Janani Suraksha Yojana cash benefits (₹1,400 - ₹6,000)"
-      ],
-      eligibilityCriteria: {
-        incomeLimit: "No income limit (Universal for all pregnant women)",
-        ageGroup: "Pregnant Women (2nd & 3rd Trimester)",
-        residence: "All States & UTs",
-        targetGroup: "Expectant mothers"
-      },
-      requiredDocuments: [
-        { name: "Mother and Child Protection (MCP) Card", required: true, status: "Available" },
-        { name: "Aadhaar Card", required: true, status: "Available" },
-        { name: "Bank Account Passbook", required: true, status: "Available" }
-      ],
-      officialSource: "Maternal Health Division, MoHFW",
-      officialUrl: "https://pmsma.mohfw.gov.in",
-      helpline: "1800-180-1104",
-      lastVerifiedDate: "01 Aug 2026",
-      updatedBadge: "Active Nationwide",
-      coveredHospitalsInDistrict: 12,
-      schemeType: "Free Maternal Healthcare"
     },
     {
       id: "pmbjp",
       name: "Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)",
       hindiName: "प्रधानमंत्री भारतीय जनऔषधि परियोजना (सस्ती दवाइयां)",
-      category: "Affordable Medicines",
+      category: "Affordable Generic Medicines",
       governmentLevel: "Central",
       state: "All India",
       status: "Active",
       statusType: "active",
       matchScore: 95,
+      eligibilityTag: "Universal Access",
+      eligibilityTagClass: "status-tag-eligible",
       whyMatch: [
-        "Reduces monthly out-of-pocket pharmacy bills by 50% to 90% for chronic conditions (Hypertension, Diabetes)",
+        "Directly covers your active prescription (Metformin & Telmisartan) at 50-90% lower price",
         "15+ Janaushadhi Kendras operating within 5 km of Ludhiana pin code 141001",
-        "Direct walk-in access with any valid doctor prescription"
+        "Walk-in access with your existing Sanjeevani prescription"
       ],
       shortSummary: "Quality generic medicines, surgical items, and nutraceuticals available at 50% to 90% lesser prices than branded equivalents.",
-      fullDescription: "Dedicated campaign by the Pharmaceuticals & Medical Devices Bureau of India (PMBI) to provide quality medicines at affordable prices for all through special outlets known as Pradhan Mantri Bhartiya Janaushadhi Kendras.",
+      fullDescription: "Dedicated campaign by PMBI to provide high quality generic medicines for diabetes, cardiovascular, and chronic conditions at minimal prices.",
       benefits: [
         "2,000+ generic medicines & 300+ surgical items at 50-90% discount",
-        "WHO-GMP certified quality assurance for all batches",
-        "Cardiovascular, hypertensive, and anti-diabetic formulations priced under ₹10-₹25 per strip",
+        "WHO-GMP certified quality assurance for all medicine batches",
+        "Diabetes and Blood Pressure medicines under ₹10-₹25 per strip",
         "Zero registration required; open to all citizens"
       ],
       eligibilityCriteria: {
         incomeLimit: "No income limit (Universal for all citizens)",
-        ageGroup: "All age groups",
+        ageGroup: "All Age Groups",
         residence: "All India",
         targetGroup: "Any citizen requiring affordable medicines"
       },
       requiredDocuments: [
-        { name: "Valid Doctor's Prescription (Rx)", required: true, status: "Available" }
+        { name: "Doctor's Prescription (Rx)", required: true, status: "Available in Sanjeevani Medical Records" }
       ],
       officialSource: "Pharmaceuticals & Medical Devices Bureau of India (PMBI)",
       officialUrl: "https://janaushadhi.gov.in",
       helpline: "1800-180-8080",
       lastVerifiedDate: "20 Aug 2026",
-      updatedBadge: "10,000+ Kendras Operational",
       coveredHospitalsInDistrict: 32,
       schemeType: "Generic Pharmacy Network"
     },
     {
-      id: "nikshay",
-      name: "Ni-kshay Poshan Yojana (NPY - TB Patient Support)",
-      hindiName: "निक्षय पोषण योजना (टीबी पोषण सहायता)",
-      category: "Nutritional & Direct Benefit Transfer",
-      governmentLevel: "Central (National TB Elimination Program)",
+      id: "pmndp",
+      name: "Pradhan Mantri National Dialysis Programme (PMNDP)",
+      hindiName: "प्रधानमंत्री राष्ट्रीय डायलिसिस कार्यक्रम",
+      category: "Specialized Free Care",
+      governmentLevel: "Central & State Convergence",
+      state: "All India",
+      status: "Active",
+      statusType: "active",
+      matchScore: 82,
+      eligibilityTag: "Potentially Eligible",
+      eligibilityTagClass: "status-tag-info",
+      whyMatch: [
+        "Free hemodialysis access for BPL/EWS patients at District Civil Hospital Ludhiana",
+        "Zero out-of-pocket expenses for renal replacement therapy",
+        "Seamless integration with Ayushman Golden Card"
+      ],
+      shortSummary: "Free dialysis services for Below Poverty Line (BPL) patients across all District Civil Hospitals in India.",
+      fullDescription: "Provides 100% free hemodialysis and peritoneal dialysis services to poor patients through PPP mode at district health centers.",
+      benefits: [
+        "100% Free Hemodialysis and Peritoneal Dialysis for BPL patients",
+        "Free routine lab tests during dialysis cycles",
+        "Covers essential dialysis consumables and EPO injections"
+      ],
+      eligibilityCriteria: {
+        incomeLimit: "BPL card holders receive 100% free treatment",
+        ageGroup: "All Ages",
+        residence: "All Indian States",
+        targetGroup: "Patients requiring dialysis"
+      },
+      requiredDocuments: [
+        { name: "Aadhaar Card", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "BPL / Ayushman Card", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Nephrologist Referral Slip", required: true, status: "Requires Clinical Referral" }
+      ],
+      officialSource: "National Health Mission (NHM), MoHFW",
+      officialUrl: "https://nhm.gov.in",
+      helpline: "1800-180-1104",
+      lastVerifiedDate: "10 Aug 2026",
+      coveredHospitalsInDistrict: 3,
+      schemeType: "Specialized Free Treatment"
+    },
+    {
+      id: "ran",
+      name: "Rashtriya Arogya Nidhi (RAN) & Rare Diseases Grant",
+      hindiName: "राष्ट्रीय आरोग्य निधि (गंभीर रोग सहायता)",
+      category: "Tertiary Life-Threatening Care",
+      governmentLevel: "Central",
       state: "All India",
       status: "Recently Updated",
       statusType: "updated",
-      matchScore: 65,
+      matchScore: 76,
+      eligibilityTag: "Information Required",
+      eligibilityTagClass: "status-tag-warning",
       whyMatch: [
-        "Direct Benefit Transfer (DBT) of ₹1,000/month for nutritional support during TB treatment",
-        "Free diagnostic testing (CBNAAT / TrueNat) and anti-tubercular medication",
-        "Updated benefit doubled in recent ministry directive"
+        "One-time financial grant of up to ₹50 Lakh for life-threatening diseases at AIIMS/PGI",
+        "Applicable for BPL families facing super-specialty treatment costs beyond normal covers"
       ],
-      shortSummary: "Direct cash transfer of ₹1,000 per month directly into bank account to provide nutritional support for all notified TB patients.",
-      fullDescription: "Centrally sponsored scheme under the National Tuberculosis Elimination Program (NTEP) providing monthly financial assistance via DBT directly into the bank accounts of all notified TB patients throughout their treatment duration.",
+      shortSummary: "One-time financial assistance of up to ₹50 Lakh for poor patients suffering from major life-threatening diseases at premier government hospitals.",
+      fullDescription: "Rashtriya Arogya Nidhi provides direct financial assistance to patients below the poverty line for major surgeries at central government institutes.",
       benefits: [
-        "₹1,000/month DBT cash transfer during entire course of treatment",
-        "100% free diagnostics, sputum tests, and first/second-line drugs",
-        "Free Nikshay Mitra nutrition ration kit delivery",
-        "Integrated monitoring via the Ni-kshay online portal"
+        "Direct one-time grant up to ₹50 Lakh for critical surgeries & rare diseases",
+        "Direct fund disbursement to treating government hospital (PGI Chandigarh / AIIMS)",
+        "Includes emergency implants and specialized drugs"
       ],
       eligibilityCriteria: {
-        incomeLimit: "Universal for all notified TB patients",
-        ageGroup: "All ages",
-        residence: "All India",
-        targetGroup: "Patients clinically diagnosed and registered on Nikshay portal"
+        incomeLimit: "Below official state BPL threshold",
+        ageGroup: "All Ages",
+        residence: "Indian Citizen",
+        targetGroup: "Life-threatening ailments treated at Central Government institutes"
       },
       requiredDocuments: [
-        { name: "Aadhaar Card", required: true, status: "Available" },
-        { name: "Bank Account Passbook (Aadhaar linked)", required: true, status: "Available" },
-        { name: "TB Notification Certificate / Nikshay ID", required: true, status: "Pending" }
+        { name: "Income Certificate (Tehsildar)", required: true, status: "Available in Sanjeevani Vault" },
+        { name: "Hospital Estimate Proforma signed by MS", required: true, status: "Pending Hospital Form" }
       ],
-      officialSource: "Central TB Division, Ministry of Health & Family Welfare",
-      officialUrl: "https://nikshay.in",
-      helpline: "1800-11-6666",
-      lastVerifiedDate: "14 Aug 2026",
-      updatedBadge: "Updated: Monthly DBT Doubled to ₹1000",
-      coveredHospitalsInDistrict: 14,
-      schemeType: "Direct Benefit Transfer (DBT)"
+      officialSource: "Ministry of Health & Family Welfare",
+      officialUrl: "https://mohfw.gov.in",
+      helpline: "011-23061986",
+      lastVerifiedDate: "12 Jul 2026",
+      coveredHospitalsInDistrict: 2,
+      schemeType: "Direct Financial Medical Grant"
     }
   ],
 
+  // Real-time Intelligence Feed
   intelligenceUpdates: [
     {
       id: "intel-01",
@@ -371,62 +410,51 @@ const SANJEEVANI_DATA = {
       scheme: "Ayushman Bharat PM-JAY",
       status: "Active",
       type: "active",
-      headline: "Senior Citizen Universal Coverage Rolled Out Across Empanelled Hospitals",
-      summary: "All citizens aged 70 and above can now register directly at any Ayushman Kendra with Aadhaar biometric verification to receive the dedicated ₹5 Lakh Vay Vandana card.",
+      headline: "Senior Citizen (70+) Universal Card Registration Open at All District Kendras",
+      summary: "All citizens aged 70 and above can now register with Aadhaar e-KYC for the ₹5 Lakh Vay Vandana card without income limitation.",
       source: "National Health Authority Press Release #2026-NHA-89",
       sourceUrl: "https://nha.gov.in/updates",
-      impact: "High — Direct family members aged 70+ in Punjab can immediately avail separate ₹5L coverage."
+      impact: "Direct Benefit: Family members aged 70+ in Punjab can immediately avail dedicated ₹5L cover."
     },
     {
       id: "intel-02",
-      date: "14 Aug 2026",
-      scheme: "Ni-kshay Poshan Yojana",
+      date: "15 Aug 2026",
+      scheme: "Mukh Mantri Sehat Bima Yojana (Punjab)",
       status: "Recently Updated",
       type: "updated",
-      headline: "Nutritional DBT Support Raised From ₹500 to ₹1,000 Per Month",
-      summary: "Ministry of Health has officially enhanced direct bank transfer benefits to ₹1,000/month to counter nutrition deficits in underprivileged patients.",
-      source: "Ministry of Health & Family Welfare Gazette Notification",
-      sourceUrl: "https://mohfw.gov.in",
-      impact: "Moderate — Applicable to notified patients upon Nikshay ID registration."
+      headline: "150 New Specialized Cardiac and Oncology Treatment Packages Empaneled",
+      summary: "Punjab State Health Agency empanels 18 additional private hospitals in Ludhiana, Jalandhar, and Amritsar with zero co-pay mandate.",
+      source: "Punjab Health System Corporation Notification",
+      sourceUrl: "https://shapunjab.in",
+      impact: "Critical: Cardiac evaluation & hypertension treatments now 100% pre-authorized in Ludhiana."
     },
     {
       id: "intel-03",
       date: "03 Aug 2026",
-      scheme: "State Health Assurance (Punjab Sehat Bima)",
-      status: "Recently Updated",
-      type: "updated",
-      headline: "150 New Specialized Cardiac and Oncology Treatment Packages Added",
-      summary: "Punjab State Health Agency empanels 18 additional private hospitals in Ludhiana, Jalandhar, and Amritsar with zero co-pay mandate.",
-      source: "Punjab Health System Corporation Notification",
-      sourceUrl: "https://shapunjab.in",
-      impact: "Critical — Cardiac care requirements now 100% pre-authorized in Ludhiana district."
+      scheme: "Pradhan Mantri Bhartiya Janaushadhi Pariyojana",
+      status: "Active",
+      type: "active",
+      headline: "500 New Generic Formulations Added for Cardiovascular & Diabetes Care",
+      summary: "Prices of Telmisartan and Metformin combinations stabilized under ₹18 per strip across all 10,000+ Janaushadhi Kendras.",
+      source: "PMBI Official Gazette Notification",
+      sourceUrl: "https://janaushadhi.gov.in",
+      impact: "Reduces patient's recurring monthly pharmacy bills from ₹1,200 to under ₹180."
     },
     {
       id: "intel-04",
       date: "22 Jul 2026",
-      scheme: "Ayushman Bharat - Vay Vandana Extension",
-      status: "Newly Introduced",
-      type: "new",
-      headline: "Universal Senior Health Card Portal Launched For Direct Self-Registration",
-      summary: "Citizens can now self-register elderly family members through the Ayushman App using facial authentication or Aadhaar OTP without middle agents.",
-      source: "Ministry of Health & Family Welfare Notification",
-      sourceUrl: "https://beneficiary.nha.gov.in",
-      impact: "High — Allows paperless card generation within 10 minutes."
-    },
-    {
-      id: "intel-05",
-      date: "15 Jun 2026",
       scheme: "Rashtriya Arogya Nidhi (RAN)",
       status: "Important Changes",
       type: "warning",
-      headline: "Rare Disease One-Time Grant Upper Cap Formally Enhanced to ₹50 Lakh",
-      summary: "Under the revised National Policy for Rare Diseases, government institutes can disburse up to ₹50 lakh per patient without waiting for multi-level inter-ministerial clearance.",
+      headline: "Rare Disease Grant Cap Formally Enhanced to ₹50 Lakh with Fast-Track Approvals",
+      summary: "Under the revised National Policy, hospital medical superintendents can disburse critical grants within 14 days.",
       source: "Rare Disease Cell, MoHFW Gazette Ref #4410",
       sourceUrl: "https://mohfw.gov.in",
-      impact: "Significant — Reduces critical grant approval turnaround time from 90 days to 14 days."
+      impact: "Reduces approval turnaround time for critical interventions from 90 days to 14 days."
     }
   ],
 
+  // Uploaded Documents in Sanjeevani Document Center
   userDocuments: [
     {
       id: "doc-aadhaar",
@@ -437,7 +465,7 @@ const SANJEEVANI_DATA = {
       expiryDate: "Lifetime",
       extractedData: {
         fullName: "Ayush Bhardwaj",
-        dob: "14/06/1988",
+        dob: "14/06/1968 (Age: 58)",
         gender: "Male",
         uidMasked: "XXXX-XXXX-8921",
         state: "Punjab",
@@ -455,7 +483,7 @@ const SANJEEVANI_DATA = {
       expiryDate: "31 March 2027",
       extractedData: {
         certificateNo: "PB/LUD/INC/2026/09124",
-        annualIncome: "₹2,40,000",
+        annualIncome: "₹2,50,000",
         issuingAuthority: "Tehsildar Ludhiana West",
         category: "Low Income / Priority Group"
       },
@@ -497,19 +525,20 @@ const SANJEEVANI_DATA = {
       id: "doc-prescription",
       name: "Hospital Clinical Prescription & Cardiology Slip",
       type: "Medical Document",
-      status: "Under Review",
-      uploadedDate: "21 Aug 2026",
+      status: "Verified",
+      uploadedDate: "02 Aug 2026",
       expiryDate: "Valid 6 Months",
       extractedData: {
         hospital: "District Civil Hospital, Ludhiana",
-        diagnosis: "Grade II Essential Hypertension, Cardiac Evaluation Advised",
-        doctor: "Dr. H. S. Gill, MD (Cardiology)"
+        diagnosis: "Type 2 Diabetes, Essential Hypertension, Cardiac Evaluation Advised",
+        doctor: "Dr. H. S. Sharma, MD (Cardiology)"
       },
       fileSize: "1.8 MB",
       format: "JPG/Scan"
     }
   ],
 
+  // Tracked Applications for Government Health Cards
   applications: [
     {
       id: "app-01",
@@ -517,7 +546,7 @@ const SANJEEVANI_DATA = {
       schemeName: "Ayushman Bharat PM-JAY & Sehat Bima",
       appliedDate: "14 Aug 2026",
       currentStage: "Government Verification",
-      stageIndex: 3, // 0: Profile Submitted, 1: Eligibility Pre-Check, 2: Documents Submitted, 3: Government Verification, 4: Approved / Card Issued
+      stageIndex: 3,
       totalStages: 5,
       statusLabel: "Verification Pending at District Health Office",
       statusColor: "amber",
@@ -542,7 +571,7 @@ const SANJEEVANI_DATA = {
       totalStages: 5,
       statusLabel: "Aadhaar Age Verification In Progress",
       statusColor: "blue",
-      estimatedResolution: "23 Aug 2026",
+      estimatedResolution: "24 Aug 2026",
       notes: "Senior member Aadhaar linkage submitted for age proof validation (70+).",
       assignedCenter: "Online Direct NHA Portal Gateway",
       steps: [
@@ -555,66 +584,21 @@ const SANJEEVANI_DATA = {
     }
   ],
 
-  adminSchemeRecords: [
-    {
-      id: "pmjay",
-      name: "Ayushman Bharat PM-JAY",
-      level: "Central",
-      state: "All India",
-      status: "Active",
-      eligibility: "SECC Deprived / BPL / Low Income (< ₹2.5L)",
-      benefit: "₹5,00,000 / Year / Family",
-      lastUpdated: "18 Aug 2026",
-      officialSource: "National Health Authority",
-      sourceVerified: true
-    },
-    {
-      id: "pmjay-vav",
-      name: "Ayushman Vay Vandana (70+ Seniors)",
-      level: "Central",
-      state: "All India",
-      status: "Newly Introduced",
-      eligibility: "Universal for all Citizens 70+ Yrs",
-      benefit: "₹5,00,000 Dedicated Top-up",
-      lastUpdated: "15 Aug 2026",
-      officialSource: "MoHFW Notification",
-      sourceVerified: true
-    },
-    {
-      id: "sarbat-sehat",
-      name: "Mukh Mantri Sehat Bima Yojana",
-      level: "State",
-      state: "Punjab",
-      status: "Recently Updated",
-      eligibility: "NFSA Blue Card / J-Form Farmers",
-      benefit: "₹5,00,000 / Year / Family",
-      lastUpdated: "12 Aug 2026",
-      officialSource: "State Health Agency Punjab",
-      sourceVerified: true
-    },
-    {
-      id: "pmndp",
-      name: "National Dialysis Programme",
-      level: "Central/State",
-      state: "All India",
-      status: "Active",
-      eligibility: "BPL & EWS Renal Patients",
-      benefit: "100% Free Dialysis at Civil Hospitals",
-      lastUpdated: "05 Aug 2026",
-      officialSource: "NHM Portal",
-      sourceVerified: true
-    },
-    {
-      id: "ran",
-      name: "Rashtriya Arogya Nidhi (RAN)",
-      level: "Central",
-      state: "All India",
-      status: "Recently Updated",
-      eligibility: "BPL with Rare/Critical Illnesses",
-      benefit: "Direct Grant up to ₹50 Lakh",
-      lastUpdated: "10 Jul 2026",
-      officialSource: "Rare Disease Division MoHFW",
-      sourceVerified: true
-    }
-  ]
+  // Step 11: Proposed Database Schema Extensions
+  databaseSchemaDocumentation: {
+    tables: [
+      {
+        name: "government_schemes",
+        columns: ["id (UUID)", "scheme_name (TEXT)", "description (TEXT)", "government_level (TEXT)", "state (TEXT)", "category (TEXT)", "eligibility (JSONB)", "benefits (JSONB)", "documents_required (JSONB)", "status (TEXT)", "official_source (TEXT)", "last_updated (TIMESTAMP)"]
+      },
+      {
+        name: "scheme_recommendations",
+        columns: ["id (UUID)", "user_id (FK patients.id)", "scheme_id (FK government_schemes.id)", "eligibility_status (TEXT)", "relevance_reason (TEXT[])", "generated_at (TIMESTAMP)"]
+      },
+      {
+        name: "consents",
+        columns: ["id (UUID)", "patient_id (FK patients.id)", "recipient_type (ENUM: 'doctor', 'scheme_verification')", "recipient_id (TEXT)", "purpose (TEXT)", "records_allowed (TEXT[])", "valid_from (TIMESTAMP)", "valid_until (TIMESTAMP)", "status (ENUM: 'active', 'revoked', 'expired')", "revoked_at (TIMESTAMP)"]
+      }
+    ]
+  }
 };

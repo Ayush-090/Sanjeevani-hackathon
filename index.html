@@ -3,703 +3,814 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanjeevani — AI-Powered Government Medical Scheme Intelligence</title>
-  <meta name="description" content="Discover government healthcare schemes matched to your profile, understand your eligibility, and know exactly what to do next with transparent verification.">
+  <title>Sanjeevani — Unified Digital Health & Sarvam AI Voice Assistant</title>
+  <meta name="description" content="Manage your digital health records, doctor consultations, and talk to Sanjeevani AI powered by Sarvam AI Indic Speech-to-Text in 22 Indian languages.">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 2v20M2 12h20'/></svg>">
 </head>
 <body>
 
-  <!-- Mobile Simulator Root Wrapper -->
+  <!-- App Root Wrapper -->
   <div id="app-root-container">
 
-    <!-- Trust & Safety Banner -->
-    <div class="trust-banner">
-      <div class="container trust-banner-inner">
-        <div class="trust-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span data-i18n="verifiedOfficial">Official Government Healthcare Scheme Intelligence & Verification Route</span>
-        </div>
-        <div class="trust-disclaimer" data-i18n="disclaimerBanner">
-          Sanjeevani provides intelligent informational guidance. Final eligibility and approval are determined by the respective government authority.
-        </div>
-      </div>
-    </div>
-
-    <!-- Site Header -->
+    <!-- Global Header -->
     <header class="site-header">
       <div class="container header-inner">
         <!-- Logo -->
-        <a href="#" class="brand-group" onclick="switchScreen('home'); return false;">
+        <div class="brand-group" onclick="routeToLandingPage()">
           <div class="brand-logo-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
           </div>
-          <div class="brand-meta">
-            <span class="brand-name" data-i18n="appName">Sanjeevani</span>
-            <span class="brand-subtext" data-i18n="tagline">Health Intelligence</span>
+          <div>
+            <div class="brand-name">Sanjeevani</div>
+            <div class="brand-subtext">Digital Health & Schemes</div>
           </div>
-        </a>
+        </div>
 
-        <!-- Main Desktop Navigation (Screens 1 to 12) -->
-        <nav class="main-nav">
-          <a href="#" class="nav-link active" data-screen="home" data-i18n="navHome">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Home
-          </a>
-          <a href="#" class="nav-link" data-screen="schemes" data-i18n="navSchemes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Schemes
-          </a>
-          <a href="#" class="nav-link" data-screen="ai" data-i18n="askAssistantCTA">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
-            AI Assistant
-          </a>
-          <a href="#" class="nav-link" data-screen="intelligence" data-i18n="navIntelligence">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            Intelligence
-          </a>
-          <a href="#" class="nav-link" data-screen="profile" data-i18n="navProfile">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Health Profile
-          </a>
-          <a href="#" class="nav-link" data-screen="documents" data-i18n="navDocuments">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Documents
-          </a>
-          <a href="#" class="nav-link" data-screen="applications" data-i18n="navApplications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            Tracker
-          </a>
-          <a href="#" class="nav-link" data-screen="admin" data-i18n="navAdmin">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Admin
-          </a>
+        <!-- 1. Public Nav Links (When Unauthenticated) -->
+        <nav id="public-nav-links" class="main-nav">
+          <a href="#" class="nav-link" onclick="routeToLandingPage(); return false;">Home</a>
+          <a href="#how-it-works" class="nav-link">How It Works</a>
+          <a href="#for-doctors" class="nav-link">For Doctors</a>
+          <a href="#" class="nav-link" onclick="openAuthModal('patient'); return false;">AI Voice Assistant</a>
         </nav>
 
-        <!-- Utilities -->
-        <div class="header-actions">
-          <!-- Mobile Simulator Mode Toggle -->
-          <button id="simulator-toggle-btn" class="view-simulator-btn" onclick="toggleMobileSimulator()" title="Toggle Mobile (390px) Viewport">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            <span>Mobile View</span>
-          </button>
+        <!-- 2. Patient Nav Links (When Logged in as Patient) -->
+        <nav id="patient-nav-links" class="main-nav" style="display: none;">
+          <a href="#" class="nav-link" onclick="switchPatientTab('overview'); return false;">Overview</a>
+          <a href="#" class="nav-link" onclick="switchPatientTab('health'); return false;">My Health</a>
+          <a href="#" class="nav-link" onclick="switchPatientTab('records'); return false;">Medical Records</a>
+          <a href="#" class="nav-link" onclick="switchPatientTab('doctors'); return false;">Doctors</a>
+          <a href="#" class="nav-link" style="color: var(--teal-900); font-weight: 800;" onclick="switchPatientTab('schemes'); return false;">🏛️ Gov Schemes</a>
+          <a href="#" class="nav-link active" onclick="switchPatientTab('ai'); return false;">🤖 AI Voice Chat</a>
+        </nav>
 
-          <!-- Language Selector (Screen 10) -->
-          <div class="lang-selector-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <select id="lang-selector-select" class="lang-select" aria-label="Select Language">
-              <option value="en">English</option>
-              <option value="hi">हिन्दी (Hindi)</option>
-              <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-              <option value="bn">বাংলা (Bengali)</option>
-              <option value="mr">मराठी (Marathi)</option>
-              <option value="ta">தமிழ் (Tamil)</option>
-              <option value="te">తెలుగు (Telugu)</option>
-            </select>
+        <!-- 3. Doctor Nav Links (When Logged in as Doctor) -->
+        <nav id="doctor-nav-links" class="main-nav" style="display: none;">
+          <a href="#" class="nav-link active" onclick="switchDoctorTab('overview'); return false;">Overview</a>
+          <a href="#" class="nav-link" onclick="switchDoctorTab('patients'); return false;">My Patients</a>
+          <a href="#" class="nav-link" onclick="switchDoctorTab('requests'); return false;">Record Requests</a>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Public Login / Get Started -->
+          <div id="nav-login-btn">
+            <button class="btn btn-secondary btn-sm" onclick="openAuthModal('patient')">Login</button>
+            <button class="btn btn-primary btn-sm" onclick="openAuthModal('patient')">Get Started</button>
           </div>
 
-          <!-- Notification Icon -->
-          <button class="btn-icon-subtle" onclick="switchScreen('intelligence')" title="Scheme Notifications">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="notif-badge"></span>
-          </button>
-
-          <!-- User Profile Pill -->
-          <div class="user-profile-pill" onclick="switchScreen('profile')">
-            <div class="user-avatar">AB</div>
-            <div class="user-info-text">
-              <span class="user-name">Ayush Bhardwaj</span>
-              <span class="user-tag">Punjab (Ludhiana)</span>
+          <!-- Authenticated User Profile Pill -->
+          <div id="nav-user-pill" class="user-profile-pill" style="display: none;">
+            <div class="user-avatar" id="nav-user-avatar">AB</div>
+            <div style="display: flex; flex-direction: column;">
+              <span id="nav-user-pill-name" style="font-size: 12.5px; font-weight: 700;">Ayush (58)</span>
+              <span id="nav-user-pill-tag" style="font-size: 10px; color: var(--teal-700);">Patient Account</span>
             </div>
+            <button style="margin-left: 8px; font-size: 11px; color: #dc2626; font-weight: 700;" onclick="handleLogout()" title="Sign Out">Logout</button>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Main Screens Container -->
-    <main>
-
-      <!-- ====================================================================
-           SCREEN 1: LANDING / HOME DASHBOARD
-           ==================================================================== -->
-      <section id="screen-home" class="view-screen active-screen">
-        <!-- Hero Section -->
-        <div class="hero-section">
-          <div class="container hero-grid">
-            <div class="hero-content">
-              <div class="hero-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>Ayushman Bharat & State Convergence Intelligence</span>
-              </div>
-              <h1 class="hero-headline" data-i18n="heroTitle">
-                Your healthcare. Your benefits. <span class="highlight">One intelligent platform.</span>
-              </h1>
-              <p class="hero-subtext" data-i18n="heroSubtitle">
-                Discover government healthcare schemes matched to your profile, understand your eligibility, and know exactly what to do next with transparent verification.
-              </p>
-              <div class="hero-cta-group">
-                <button class="btn btn-primary btn-lg" onclick="switchScreen('schemes')" data-i18n="findSchemesCTA">
-                  Find My Schemes
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
-                <button class="btn btn-secondary btn-lg" onclick="switchScreen('ai')" data-i18n="askAssistantCTA">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-                  Ask Sanjeevani AI
-                </button>
-              </div>
-
-              <div class="hero-trust-indicators">
-                <div class="hero-trust-stat">
-                  <span class="trust-stat-num">₹5,00,000</span>
-                  <span class="trust-stat-lbl">Annual Cashless Cover</span>
-                </div>
-                <div class="hero-trust-stat">
-                  <span class="trust-stat-num">28,000+</span>
-                  <span class="trust-stat-lbl">Empaneled Hospitals</span>
-                </div>
-                <div class="hero-trust-stat">
-                  <span class="trust-stat-num">100% Free</span>
-                  <span class="trust-stat-lbl">Citizen Guidance</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hero Live Spotlight Card -->
-            <div class="hero-card-preview">
-              <div class="preview-card-header">
-                <div class="citizen-badge-chip">
-                  <span class="live-pulse"></span>
-                  <span>Personalized for Ayush (Punjab)</span>
-                </div>
-                <span class="badge badge-active">Active Match</span>
-              </div>
-
-              <div class="match-spotlight">
-                <div class="spotlight-top">
-                  <div>
-                    <div class="spotlight-title">Ayushman Bharat PM-JAY</div>
-                    <div style="font-size: 12px; color: #a7f3d0;">Central & Punjab State Convergence</div>
-                  </div>
-                  <span class="spotlight-match-val">96% Match</span>
-                </div>
-                <div class="spotlight-benefit">₹5,00,000 / Family / Year</div>
-                <div class="spotlight-sub">Covers Secondary & Tertiary Hospitalization with 100% Cashless Admission</div>
-              </div>
-
-              <div class="quick-match-points">
-                <div class="quick-point">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Family income (₹2.4L) within SECC/BPL qualification bracket</span>
-                </div>
-                <div class="quick-point">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Valid NFSA Priority Ration Card (Blue Card) available</span>
-                </div>
-                <div class="quick-point">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Senior Family Member (70+) eligible for universal Vay Vandana cover</span>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 10px;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="openSchemeModal('pmjay')">
-                  View Full Details →
-                </button>
-                <button class="btn btn-secondary" onclick="switchScreen('applications')">
-                  Track Application
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Summary Metrics Bar (Screen 3) -->
-        <div class="container summary-bar-section">
-          <div class="summary-metrics-grid">
-            <div class="metric-card m-green" onclick="switchScreen('schemes')">
-              <div class="metric-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
-              </div>
-              <div class="metric-data">
-                <span id="count-total-schemes" class="metric-number">12</span>
-                <span class="metric-label" data-i18n="relevantSchemesCount">Relevant Schemes</span>
-              </div>
-            </div>
-
-            <div class="metric-card m-teal" onclick="switchScreen('schemes')">
-              <div class="metric-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <div class="metric-data">
-                <span id="count-high-match" class="metric-number">5</span>
-                <span class="metric-label" data-i18n="highlyRelevantCount">Highly Relevant (85%+ Match)</span>
-              </div>
-            </div>
-
-            <div class="metric-card m-blue" onclick="switchScreen('intelligence')">
-              <div class="metric-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div class="metric-data">
-                <span id="count-updated-schemes" class="metric-number">3</span>
-                <span class="metric-label" data-i18n="recentlyUpdatedCount">Recently Updated</span>
-              </div>
-            </div>
-
-            <div class="metric-card m-amber" onclick="switchScreen('intelligence')">
-              <div class="metric-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
-              <div class="metric-data">
-                <span id="count-new-schemes" class="metric-number">2</span>
-                <span class="metric-label" data-i18n="newSchemesCount">Newly Introduced</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 2: AI HEALTH ASSISTANT (CONVERSATIONAL INTERFACE)
-           ==================================================================== -->
-      <section id="screen-ai" class="view-screen">
-        <div class="container ai-assistant-container">
-          <!-- Context Panel -->
-          <div class="ai-context-panel">
-            <div class="context-header">
-              <div class="ai-avatar-large">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
-              </div>
-              <div>
-                <h3 style="font-size: 16px; font-weight: 800;">Sanjeevani AI</h3>
-                <span class="ai-status-online">
-                  <span class="badge-dot" style="background: var(--primary-500);"></span>
-                  ● Online & Encrypted
-                </span>
-              </div>
-            </div>
-
-            <div class="active-profile-card">
-              <div class="profile-card-title">
-                <span>Active Citizen Context</span>
-                <span class="badge badge-active">Live</span>
-              </div>
-              <div class="profile-line">
-                <span>State:</span>
-                <strong>Punjab (Ludhiana)</strong>
-              </div>
-              <div class="profile-line">
-                <span>Family Income:</span>
-                <strong>₹2.4 Lakh / Year</strong>
-              </div>
-              <div class="profile-line">
-                <span>Ration Card:</span>
-                <strong>NFSA Blue Card (PHH)</strong>
-              </div>
-              <div class="profile-line">
-                <span>Clinical Need:</span>
-                <strong>Hospitalization / Cardiac</strong>
-              </div>
-            </div>
-
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--bg-surface-subtle); padding: 12px; border-radius: var(--radius-md);">
-              💡 <strong>AI Guidance Note:</strong> Sanjeevani AI processes inquiries in <strong>English, Hindi, and Hinglish</strong>. Type queries such as:
-              <em style="display: block; margin-top: 4px; color: var(--text-secondary);">"Meri family income 2.5 lakh hai aur Punjab mein hospital treatment ke liye scheme chahiye."</em>
-            </div>
-          </div>
-
-          <!-- Conversational Chat Window -->
-          <div class="ai-chat-window">
-            <div id="chat-messages-container" class="chat-messages-scroll">
-              <!-- Dynamically populated -->
-            </div>
-
-            <!-- Progress Step Loading Bar -->
-            <div id="ai-progress-indicator" class="ai-progress-box" style="display: none; margin: 0 24px 12px;">
-              <div id="progress-step-text" class="progress-step-text">
-                Understanding citizen profile & clinical context...
-              </div>
-              <div class="progress-bar-track">
-                <div id="progress-bar-fill" class="progress-bar-fill" style="width: 25%;"></div>
-              </div>
-            </div>
-
-            <!-- Chat Input Bar -->
-            <div class="chat-input-bar">
-              <input id="chat-user-input" type="text" class="chat-input-field" placeholder="Ask in Hindi, English or Hinglish (e.g. 'Meri family income ₹2.5 lakh hai...')" autocomplete="off">
-              <button class="btn btn-primary" onclick="handleSendMessage()">
-                <span>Send</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 3 & 4: SCHEME DISCOVERY DASHBOARD & CARDS
-           ==================================================================== -->
-      <section id="screen-schemes" class="view-screen">
-        <div class="container discovery-layout">
-          <div class="section-head">
-            <h2 class="section-title" data-i18n="navSchemes">Government Health Schemes</h2>
-            <p class="section-subtitle">Schemes relevant to you, ranked by your profile match & verified government eligibility criteria.</p>
-          </div>
-
-          <!-- Filter Toolbar -->
-          <div class="filter-toolbar">
-            <!-- Tabs -->
-            <div class="tab-nav-row">
-              <button class="tab-btn active" data-tab="for-you" data-i18n="tabForYou">
-                For You <span id="tab-count-for-you" class="tab-count">5</span>
-              </button>
-              <button class="tab-btn" data-tab="active" data-i18n="tabActive">
-                Active <span id="tab-count-active" class="tab-count">4</span>
-              </button>
-              <button class="tab-btn" data-tab="new" data-i18n="tabNew">
-                Newly Introduced <span id="tab-count-new" class="tab-count">2</span>
-              </button>
-              <button class="tab-btn" data-tab="updated" data-i18n="tabUpdated">
-                Recently Updated <span id="tab-count-updated" class="tab-count">3</span>
-              </button>
-              <button class="tab-btn" data-tab="all" data-i18n="tabAll">
-                All Schemes <span id="tab-count-all" class="tab-count">8</span>
-              </button>
-            </div>
-
-            <!-- Search and Select Filters -->
-            <div class="search-filter-row">
-              <div class="search-input-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input id="main-scheme-search" type="text" class="search-field" placeholder="Search schemes by name, treatment, disease..." data-i18n-placeholder="searchPlaceholder">
-              </div>
-
-              <select id="filter-state" class="filter-select" aria-label="Filter State">
-                <option value="all">State: All India & Punjab</option>
-                <option value="Punjab">Punjab Only</option>
-                <option value="All India">Central (All India)</option>
-              </select>
-
-              <select id="filter-gov-level" class="filter-select" aria-label="Filter Government Level">
-                <option value="all">Level: All Governments</option>
-                <option value="Central">Central Government</option>
-                <option value="State">State Government</option>
-              </select>
-
-              <select id="sort-schemes-by" class="filter-select" aria-label="Sort Schemes">
-                <option value="match">Sort: Highest Profile Match</option>
-                <option value="updated">Sort: Recently Updated</option>
-                <option value="name">Sort: Scheme Name A-Z</option>
-              </select>
-
-              <button class="reset-filters-btn" onclick="resetAllFilters()">Reset</button>
-            </div>
-          </div>
-
-          <!-- Scheme Cards Grid -->
-          <div id="schemes-grid-container" class="schemes-grid">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 6: SCHEME INTELLIGENCE & GOVERNMENT UPDATES
-           ==================================================================== -->
-      <section id="screen-intelligence" class="view-screen">
-        <div class="container intelligence-timeline-wrap">
-          <div class="section-head" style="text-align: center;">
-            <h2 class="section-title">Scheme Intelligence & Updates Feed</h2>
-            <p class="section-subtitle">Stay updated on newly launched benefits, policy revisions, and official government gazettes.</p>
-            
-            <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;">
-              <button class="btn btn-secondary btn-sm" onclick="renderIntelligenceTimeline('all')">All Updates</button>
-              <button class="btn btn-secondary btn-sm" onclick="renderIntelligenceTimeline('active')">🟢 Active</button>
-              <button class="btn btn-secondary btn-sm" onclick="renderIntelligenceTimeline('new')">🆕 Newly Introduced</button>
-              <button class="btn btn-secondary btn-sm" onclick="renderIntelligenceTimeline('updated')">🔄 Recently Updated</button>
-              <button class="btn btn-secondary btn-sm" onclick="renderIntelligenceTimeline('warning')">⚠️ Policy Changes</button>
-            </div>
-          </div>
-
-          <div id="timeline-feed-container" class="timeline-feed">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 7: PERSONAL HEALTH PROFILE
-           ==================================================================== -->
-      <section id="screen-profile" class="view-screen">
-        <div class="container profile-grid-layout">
-          <div class="profile-form-card">
-            <h2 class="section-title" style="margin-bottom: 8px;" data-i18n="navProfile">My Health Profile</h2>
-            <p style="color: var(--text-muted); font-size: 13.5px; margin-bottom: 24px;">
-              Your information is securely encrypted and used dynamically to personalize scheme recommendations and eligibility calculations.
-            </p>
-
-            <!-- Personal Info -->
-            <div class="profile-section-block">
-              <h3 class="section-block-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Personal Information
-              </h3>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="profile-name">Full Name</label>
-                  <input id="profile-name" type="text" class="form-input" value="Ayush Bhardwaj">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="profile-age">Age</label>
-                  <input id="profile-age" type="number" class="form-input" value="38">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="profile-state">State</label>
-                  <select id="profile-state" class="form-input">
-                    <option value="Punjab">Punjab</option>
-                    <option value="Haryana">Haryana</option>
-                    <option value="Delhi">Delhi</option>
-                    <option value="Maharashtra">Maharashtra</option>
-                    <option value="Uttar Pradesh">Uttar Pradesh</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="profile-district">District</label>
-                  <input id="profile-district" type="text" class="form-input" value="Ludhiana">
-                </div>
-              </div>
-            </div>
-
-            <!-- Financial Profile -->
-            <div class="profile-section-block">
-              <h3 class="section-block-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                Financial & Beneficiary Profile
-              </h3>
-              <div class="income-range-wrap">
-                <label class="form-label">Annual Family Income</label>
-                <div id="income-display-val" class="income-display-val">₹2.4 Lakh / Year</div>
-                <input id="income-slider" type="range" min="50000" max="1000000" step="25000" value="240000" style="width: 100%; accent-color: var(--primary-600);">
-                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-                  <span>₹50K (BPL Tier)</span>
-                  <span>₹2.5 Lakh (Ayushman Cap)</span>
-                  <span>₹10 Lakh</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Clinical Needs -->
-            <div class="profile-section-block">
-              <h3 class="section-block-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                Healthcare Requirements
-              </h3>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <span class="doc-chip" style="background: #ecfdf5; color: var(--primary-800); border-color: var(--primary-500);">Hypertension Care</span>
-                <span class="doc-chip" style="background: #ecfdf5; color: var(--primary-800); border-color: var(--primary-500);">Cashless Hospitalization</span>
-                <span class="doc-chip" style="background: #ecfdf5; color: var(--primary-800); border-color: var(--primary-500);">Senior Geriatric Support (70+)</span>
-              </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="handleProfileUpdate()">
-              Save & Recalculate Scheme Matches
+    <!-- ======================================================================
+         SCREEN 1: PUBLIC LANDING PAGE
+         ====================================================================== -->
+    <section id="screen-landing" class="view-screen active-screen">
+      <div class="public-hero">
+        <div class="container">
+          <span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; margin-bottom: 12px;">
+            🌿 Sarvam AI Indic Speech + Unified Healthcare & Government Scheme Ecosystem
+          </span>
+          <h1 class="public-hero-title">
+            Your healthcare. Your benefits. <span>One intelligent platform.</span>
+          </h1>
+          <p class="public-hero-sub">
+            Sanjeevani is your digital health companion. Manage clinical records, talk to Sanjeevani AI powered by Sarvam AI Indic Speech in 22 languages, and discover eligible government medical schemes with 1-click voice chat.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-lg" onclick="openAuthModal('patient')">
+              Get Started as Patient →
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="openAuthModal('doctor')">
+              Join as Doctor 👨‍⚕️
             </button>
           </div>
-
-          <!-- Dynamic Match Sidebar -->
-          <div class="profile-match-sidebar">
-            <div class="dynamic-score-card">
-              <span style="font-size: 13px; font-weight: 700; color: #a7f3d0;">Live Eligibility Match</span>
-              <div id="profile-top-score" class="score-big-num">96%</div>
-              <div style="font-size: 14px; font-weight: 700;">Top Matched Scheme:</div>
-              <div id="profile-top-scheme" style="font-size: 16px; font-weight: 800; color: #ffffff;">Ayushman Bharat PM-JAY</div>
-              <p style="font-size: 12px; color: #d1fae5; line-height: 1.4;">
-                Adjusting your income slider or state dynamically re-calculates match scores across all central and state schemes.
-              </p>
-            </div>
-          </div>
         </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 8: DOCUMENT CENTER
-           ==================================================================== -->
-      <section id="screen-documents" class="view-screen">
-        <div class="container" style="padding: 32px 0 64px;">
-          <div class="section-head" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-            <div>
-              <h2 class="section-title" data-i18n="docCenterTitle">My Documents</h2>
-              <p class="section-subtitle" data-i18n="docOcrNotice">Sanjeevani can extract relevant information from supported documents to auto-assess scheme eligibility.</p>
-            </div>
-            <button class="btn btn-primary" onclick="simulateDocumentOCR()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Upload & Scan Document (OCR)
-            </button>
-          </div>
-
-          <div id="documents-grid-container" class="documents-grid">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 9: APPLICATION TRACKER
-           ==================================================================== -->
-      <section id="screen-applications" class="view-screen">
-        <div class="container" style="padding: 32px 0 64px;">
-          <div class="section-head">
-            <h2 class="section-title" data-i18n="applicationsTitle">My Application Tracker</h2>
-            <p class="section-subtitle">Real-time status tracking for assisted government verification dossiers and golden card generation.</p>
-          </div>
-
-          <div id="applications-list-container" class="applications-list">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           SCREEN 12: ADMIN KNOWLEDGE BASE
-           ==================================================================== -->
-      <section id="screen-admin" class="view-screen">
-        <div class="container" style="padding: 32px 0 64px;">
-          <div class="section-head" style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <h2 class="section-title">Admin Knowledge Base & Source Verification</h2>
-              <p class="section-subtitle">Official scheme registry maintenance with multi-level source verification before public dissemination.</p>
-            </div>
-            <button class="btn btn-teal" onclick="triggerSourceVerificationWorkflow()">
-              + Process Scheme Update Detected
-            </button>
-          </div>
-
-          <div class="admin-table-wrap">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Scheme Name</th>
-                  <th>Level</th>
-                  <th>State</th>
-                  <th>Status</th>
-                  <th>Eligibility Criteria</th>
-                  <th>Annual Benefit</th>
-                  <th>Last Verified</th>
-                  <th>Official Source</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="admin-schemes-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- Mobile Bottom Navigation (Screen 11) -->
-    <div class="mobile-bottom-nav">
-      <div class="mobile-bottom-inner">
-        <a href="#" class="mobile-nav-item active" data-screen="home">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <span>Home</span>
-        </a>
-        <a href="#" class="mobile-nav-item" data-screen="schemes">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>Schemes</span>
-        </a>
-        <a href="#" class="mobile-nav-item" data-screen="ai">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-          <span>AI</span>
-        </a>
-        <a href="#" class="mobile-nav-item" data-screen="documents">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-          <span>Docs</span>
-        </a>
-        <a href="#" class="mobile-nav-item" data-screen="profile">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>Profile</span>
-        </a>
       </div>
-    </div>
 
-  </div> <!-- End App Root Container -->
+      <div class="container">
+        <!-- How It Works (4 Steps) -->
+        <div id="how-it-works" style="padding-top: 48px;">
+          <h2 style="font-size: 26px; text-align: center; margin-bottom: 8px;">How Sanjeevani Works</h2>
+          <p style="text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 32px;">
+            A complete, Sarvam AI voice-enabled healthcare ecosystem for Indian citizens.
+          </p>
+
+          <div class="how-it-works-grid">
+            <div class="how-step-card">
+              <div class="how-step-num">01</div>
+              <div class="how-step-title">Create Secure Profile</div>
+              <p class="how-step-desc">Register securely with Supabase Auth, link your ABHA ID, and manage your health records.</p>
+            </div>
+
+            <div class="how-step-card">
+              <div class="how-step-num">02</div>
+              <div class="how-step-title">Sarvam AI Speech Chat</div>
+              <p class="how-step-desc">Speak naturally in Hindi, Punjabi, Bengali or 22 Indic languages transcribed via Sarvam AI saaras:v3.</p>
+            </div>
+
+            <div class="how-step-card">
+              <div class="how-step-num">03</div>
+              <div class="how-step-title">Discover Government Schemes</div>
+              <p class="how-step-desc">Get matched with Ayushman Bharat PM-JAY, State Sehat Bima, and Janaushadhi based on existing vitals.</p>
+            </div>
+
+            <div class="how-step-card">
+              <div class="how-step-num">04</div>
+              <div class="how-step-title">Share with Doctors via Consent</div>
+              <p class="how-step-desc">Grant time-bound, granular access to specific lab tests with consulting doctors, with 1-click revocation.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role-Based CTA Cards -->
+        <div class="role-cta-grid">
+          <div class="role-cta-card patient-theme">
+            <div>
+              <span class="badge badge-active" style="margin-bottom: 10px;">For Patients</span>
+              <h3 style="font-size: 22px; margin-bottom: 8px;">Take Control of Your Digital Health Journey</h3>
+              <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                Manage records, talk to Sanjeevani Voice AI, discover eligible government health assurance up to ₹5 Lakh/year, and consult doctors securely.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="openAuthModal('patient')">
+              Get Started as Patient →
+            </button>
+          </div>
+
+          <div class="role-cta-card doctor-theme" id="for-doctors">
+            <div>
+              <span class="badge" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; margin-bottom: 10px;">For Doctors</span>
+              <h3 style="font-size: 22px; margin-bottom: 8px;">Access Consented Patient Records Securely</h3>
+              <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                Review diagnostic panels authorized by patients under Row Level Security (RLS), request additional reports, and provide clinical guidance.
+              </p>
+            </div>
+            <button class="btn btn-teal" onclick="openAuthModal('doctor')">
+              Join as Doctor 👨‍⚕️
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 2: PATIENT DASHBOARD (Role: Patient)
+         ====================================================================== -->
+    <section id="screen-patient-dashboard" class="view-screen">
+      <div class="container dashboard-layout">
+        <!-- Patient Sidebar -->
+        <aside class="dashboard-sidebar">
+          <div>
+            <div style="padding: 10px 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+              <div style="font-size: 11px; font-weight: 800; color: var(--primary-800); text-transform: uppercase;">Patient Portal</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Ayush Bhardwaj</div>
+            </div>
+            <div class="sidebar-nav-list">
+              <div class="sidebar-link patient-sidebar-link" data-tab="overview" onclick="switchPatientTab('overview')">
+                <span>📊 Overview</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link active" data-tab="ai" onclick="switchPatientTab('ai')">
+                <span>🤖 AI Voice Chat (Sarvam AI)</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="schemes" onclick="switchPatientTab('schemes')">
+                <span>🏛️ Government Schemes</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="health" onclick="switchPatientTab('health')">
+                <span>🩺 My Health</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="records" onclick="switchPatientTab('records')">
+                <span>📁 Medical Records</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="docs" onclick="switchPatientTab('docs')">
+                <span>📄 Document Vault</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="doctors" onclick="switchPatientTab('doctors')">
+                <span>👨‍⚕️ My Doctors</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="applications" onclick="switchPatientTab('applications')">
+                <span>📑 Applications Tracker</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="consents" onclick="switchPatientTab('consents')">
+                <span>🔐 Consent & Sharing</span>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+            <div class="sidebar-link" onclick="handleLogout()" style="color: #dc2626;">
+              <span>🚪 Sign Out</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Patient Tab Contents -->
+        <div style="flex: 1;">
+
+          <!-- ================================================================
+               WHATSAPP-STYLE SANJEEVANI AI VOICE CHAT (SARVAM AI INTEGRATION)
+               ================================================================ -->
+          <div id="patient-tab-ai" class="patient-tab-content">
+            <div class="whatsapp-chat-container">
+
+              <!-- 1. Left Conversation History Sidebar -->
+              <aside class="chat-history-sidebar">
+                <div>
+                  <div class="sidebar-threads-header">
+                    <button class="new-chat-btn" onclick="createNewChatThread()">
+                      <span>+ New Chat</span>
+                    </button>
+                    <input type="text" class="thread-search-input" placeholder="Search conversations...">
+                  </div>
+
+                  <div id="threads-scroll-container" class="threads-scroll-list">
+                    <!-- Dynamically populated threads -->
+                  </div>
+                </div>
+
+                <div style="padding: 12px; border-top: 1px solid var(--border-subtle); font-size: 11.5px; color: var(--text-muted); text-align: center;">
+                  🇮🇳 Powered by Sarvam AI Indic STT
+                </div>
+              </aside>
+
+              <!-- 2. Main Chat Area -->
+              <div class="chat-main-area">
+
+                <!-- WhatsApp-Style Chat Header -->
+                <div class="wa-chat-header">
+                  <div class="wa-header-left">
+                    <div class="wa-avatar">🩺</div>
+                    <div class="wa-header-info">
+                      <h3>Sanjeevani AI</h3>
+                      <span class="wa-connected-status">
+                        <span class="badge-dot" style="background: #22c55e;"></span>
+                        Health Profile Connected
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Header Controls: Voice Mode, Language, Sarvam Settings, Speaker -->
+                  <div class="wa-header-actions">
+                    <select class="wa-lang-select" aria-label="Select Language" onchange="window.appState.currentLanguage = this.value">
+                      <option value="hi">हिन्दी (Hindi)</option>
+                      <option value="en">English</option>
+                      <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                      <option value="bn">বাংলা (Bengali)</option>
+                      <option value="gu">ગુજરાતી (Gujarati)</option>
+                      <option value="mr">मराठी (Marathi)</option>
+                      <option value="ta">தமிழ் (Tamil)</option>
+                      <option value="te">తెలుగు (Telugu)</option>
+                      <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                      <option value="ml">മലയാളം (Malayalam)</option>
+                      <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                      <option value="as">অসমীয়া (Assamese)</option>
+                    </select>
+
+                    <button class="wa-icon-btn" onclick="openVoiceModeModal()" title="Start Voice Conversation Mode">
+                      <span>🎙️ Voice Chat</span>
+                    </button>
+
+                    <button class="wa-icon-btn" onclick="openSarvamSettingsModal()" title="Configure Sarvam AI API Key & Model">
+                      <span>⚙️ Sarvam AI</span>
+                    </button>
+
+                    <button class="wa-icon-btn" onclick="showToast('🔊 Master Audio is ON')" title="Speaker Audio Settings">
+                      <span>🔊</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Messages Feed -->
+                <div id="wa-messages-feed-container" class="wa-messages-feed">
+                  <!-- Dynamically populated WhatsApp bubbles -->
+                </div>
+
+                <!-- AI Thinking Indicator -->
+                <div id="wa-thinking-indicator" class="wa-thinking-indicator" style="display: none; margin: 0 24px 8px;">
+                  <div style="font-size: 12px; font-weight: 800; color: var(--primary-900);">Sanjeevani is checking...</div>
+                  <div class="wa-thinking-step">
+                    <span style="color: var(--primary-600);">✓</span>
+                    <span id="wa-thinking-step-text">Sarvam AI transcribing speech & matching health profile...</span>
+                  </div>
+                </div>
+
+                <!-- Message Composer with Voice Recording Waveform -->
+                <div class="wa-composer-bar">
+                  <!-- Attachment Popup Menu -->
+                  <div id="wa-attachment-popup" class="wa-attachment-popup">
+                    <div class="attachment-option-item" onclick="handleAttachmentOption('Medical Lab Report')">
+                      <span>📄</span> Upload Medical Report
+                    </div>
+                    <div class="attachment-option-item" onclick="handleAttachmentOption('Document Capture')">
+                      <span>📷</span> Capture Document (Camera)
+                    </div>
+                    <div class="attachment-option-item" onclick="handleAttachmentOption('Prescription Slip')">
+                      <span>📎</span> Upload Prescription / File
+                    </div>
+                  </div>
+
+                  <!-- [+] Attachment Button -->
+                  <button class="wa-attachment-btn" onclick="toggleAttachmentMenu()" title="Attach Document">+</button>
+
+                  <!-- Main Input Field -->
+                  <input id="wa-main-chat-input" type="text" class="wa-input-field" placeholder="Type or speak (e.g. 'Mere liye koi government scheme hai?')" autocomplete="off">
+
+                  <!-- [🎙️] Microphone Button (Sarvam AI) -->
+                  <button class="wa-mic-btn" onclick="toggleVoiceRecording()" title="Hold/Tap to Speak via Sarvam AI">
+                    <span>🎙️</span>
+                  </button>
+
+                  <!-- [➤] Send Button -->
+                  <button class="wa-send-btn" onclick="sendUserChatMessage()" title="Send Message">
+                    <span>➤</span>
+                  </button>
+
+                  <!-- In-Composer Voice Recording Overlay -->
+                  <div id="wa-recording-overlay" class="wa-recording-overlay" style="display: none;">
+                    <div class="waveform-anim-box">
+                      <span style="font-size: 18px; margin-right: 4px;">🎙️</span>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                    </div>
+
+                    <div id="recording-transcription-preview" class="recording-transcription-preview">
+                      Recording speech for Sarvam AI... (Speak in Hindi, English, Punjabi)
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                      <button class="btn btn-secondary btn-sm" onclick="cancelVoiceRecording()">Cancel</button>
+                      <button class="btn btn-primary btn-sm" onclick="confirmSendVoiceRecording()">✓ Send</button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 1. Patient Overview Tab -->
+          <div id="patient-tab-overview" class="patient-tab-content" style="display: none;">
+            <div style="margin-bottom: 20px;">
+              <h2 style="font-size: 26px; font-weight: 800;">Good morning, Ayush</h2>
+              <p style="color: var(--text-muted); font-size: 14px;">Here is your unified health and government schemes overview.</p>
+            </div>
+
+            <div class="top-metrics-grid">
+              <div class="metric-box">
+                <div class="metric-box-lbl">Health Profile</div>
+                <div class="metric-box-num">95%</div>
+                <span style="font-size: 11px; color: #059669;">Verified (ABHA Active)</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Medical Records</div>
+                <div class="metric-box-num">4</div>
+                <span style="font-size: 11px; color: var(--teal-700);">Encrypted in Vault</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Doctor Connections</div>
+                <div class="metric-box-num">1</div>
+                <span style="font-size: 11px; color: #2563eb;">Dr. H. S. Sharma (Active)</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Relevant Schemes</div>
+                <div class="metric-box-num">5</div>
+                <span style="font-size: 11px; color: #059669;">96% Top Match (PM-JAY)</span>
+              </div>
+            </div>
+
+            <!-- Government Scheme Integration Card -->
+            <div class="gov-scheme-home-card" style="margin-bottom: 24px;">
+              <div>
+                <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: 8px;">
+                  3 schemes may be relevant to you
+                </span>
+                <h2>Government Health Schemes</h2>
+                <p>Matched to your diagnosed conditions (Type 2 Diabetes, Hypertension) and Punjab residence.</p>
+                <div style="margin-top: 14px; display: flex; gap: 10px;">
+                  <button class="btn btn-secondary" onclick="switchPatientTab('schemes')">Explore Schemes →</button>
+                  <button class="btn btn-teal" onclick="switchPatientTab('ai')">Talk with Sarvam Voice AI 🎙️</button>
+                </div>
+              </div>
+              <div style="text-align: center; background: rgba(255,255,255,0.15); padding: 16px; border-radius: 12px; min-width: 130px;">
+                <div style="font-size: 32px; font-weight: 800; color: #a7f3d0;">96%</div>
+                <div style="font-size: 12px; color: white;">PM-JAY Match</div>
+              </div>
+            </div>
+
+            <!-- Health Snapshot -->
+            <h3 style="font-size: 18px; margin-bottom: 12px;">Health Snapshot</h3>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">Blood Pressure</div>
+                <div id="vital-bp" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">138/88 mmHg</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">Fasting Blood Sugar</div>
+                <div id="vital-sugar" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">142 mg/dL</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">HbA1c</div>
+                <div id="vital-hba1c" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">7.4%</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">BMI</div>
+                <div id="vital-bmi" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">24.6</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Patient Tabs -->
+          <div id="patient-tab-health" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">My Health & Clinical Parameters</h2>
+            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+              <div><strong>Chronic Conditions:</strong> Type 2 Diabetes Mellitus, Stage 1 Hypertension</div>
+              <div style="margin-top: 8px;"><strong>Active Medications:</strong> Metformin 500mg, Telmisartan 40mg, Atorvastatin 10mg</div>
+            </div>
+          </div>
+
+          <div id="patient-tab-records" class="patient-tab-content" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h2 style="font-size: 22px;">Medical Records Vault</h2>
+              <button class="btn btn-primary btn-sm" onclick="showToast('Upload encrypted record...')">+ Upload Record</button>
+            </div>
+            <div id="records-grid-container" class="records-grid"></div>
+          </div>
+
+          <div id="patient-tab-docs" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Document Vault (OCR Enabled)</h2>
+            <div id="documents-grid-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;"></div>
+          </div>
+
+          <div id="patient-tab-doctors" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">My Doctors & Consent Sharing</h2>
+            <div id="doctors-grid-container" class="doctors-grid"></div>
+          </div>
+
+          <div id="patient-tab-schemes" class="patient-tab-content" style="display: none;">
+            <div class="discovery-wizard-wrap">
+              <div id="discovery-step-1">
+                <span class="wizard-badge">Step 1 of 4</span>
+                <h2 style="font-size: 20px; margin: 8px 0;">Find Government Health Schemes</h2>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                  Sanjeevani will cross-reference your health profile against Central & State registries.
+                </p>
+                <button class="btn btn-primary" onclick="setDiscoveryStep(2)">Find Schemes For Me →</button>
+              </div>
+
+              <div id="discovery-step-2" style="display: none;">
+                <span class="wizard-badge">Step 2 of 4</span>
+                <h2 style="font-size: 20px; margin: 8px 0;">Use Existing Health Profile</h2>
+                <div class="profile-summary-matrix">
+                  <div class="matrix-field"><span class="matrix-field-lbl">Age</span><span class="matrix-field-val">58 Yrs • Male</span></div>
+                  <div class="matrix-field"><span class="matrix-field-lbl">Location</span><span class="matrix-field-val">Punjab (Ludhiana)</span></div>
+                  <div class="matrix-field"><span class="matrix-field-lbl">Income</span><span class="matrix-field-val">₹2.5 Lakh / Year</span></div>
+                  <div class="matrix-field"><span class="matrix-field-lbl">Conditions</span><span class="matrix-field-val">Diabetes & HTN</span></div>
+                </div>
+                <button class="btn btn-primary" onclick="setDiscoveryStep(3)">Confirm & Continue →</button>
+              </div>
+
+              <div id="discovery-step-3" style="display: none; text-align: center; padding: 24px 0;">
+                <h3 style="font-size: 18px; margin-bottom: 6px;">AI Matching Engine</h3>
+                <p id="wizard-match-status-text" style="color: var(--text-secondary); font-size: 13px;">Analyzing criteria...</p>
+                <div style="max-width: 380px; margin: 12px auto; height: 6px; background: #d1fae5; border-radius: 99px; overflow: hidden;">
+                  <div id="wizard-match-progress-bar" style="width: 25%; height: 100%; background: var(--primary-600);"></div>
+                </div>
+              </div>
+
+              <div id="discovery-step-4" style="display: none;">
+                <h2 style="font-size: 20px; margin-bottom: 12px;">Schemes Relevant To You</h2>
+              </div>
+            </div>
+
+            <div id="schemes-grid-container" class="schemes-grid"></div>
+          </div>
+
+          <div id="patient-tab-applications" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Government Health Card Applications</h2>
+            <div id="applications-list-container"></div>
+          </div>
+
+          <div id="patient-tab-consents" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Consent & Data Sharing Manager</h2>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin-bottom: 20px;">Manage active data permissions granted to medical doctors.</p>
+            <div id="active-consents-container"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 3: DOCTOR DASHBOARD (Role: Doctor)
+         ====================================================================== -->
+    <section id="screen-doctor-dashboard" class="view-screen">
+      <div class="container dashboard-layout">
+        <!-- Doctor Sidebar -->
+        <aside class="dashboard-sidebar">
+          <div>
+            <div style="padding: 10px 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+              <div style="font-size: 11px; font-weight: 800; color: var(--teal-700); text-transform: uppercase;">Doctor Portal</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Dr. H. S. Sharma</div>
+              <span class="badge badge-active" style="margin-top: 4px;">✓ Verified Doctor</span>
+            </div>
+            <div class="sidebar-nav-list">
+              <div class="sidebar-link doctor-sidebar-link active" data-tab="overview" onclick="switchDoctorTab('overview')">
+                <span>📊 Overview</span>
+              </div>
+              <div class="sidebar-link doctor-sidebar-link" data-tab="patients" onclick="switchDoctorTab('patients')">
+                <span>👥 My Patients</span>
+              </div>
+              <div class="sidebar-link doctor-sidebar-link" data-tab="requests" onclick="switchDoctorTab('requests')">
+                <span>📋 Record Requests</span>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+            <div class="sidebar-link" onclick="handleLogout()" style="color: #dc2626;">
+              <span>🚪 Sign Out</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Doctor Contents -->
+        <div style="flex: 1;">
+          <div id="doctor-tab-overview" class="doctor-tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+              <div>
+                <h2 style="font-size: 26px; font-weight: 800;">Good morning, Dr. Sharma</h2>
+                <p style="color: var(--text-muted); font-size: 14px;">Senior Consultant Cardiologist • District Civil Hospital Ludhiana</p>
+              </div>
+              <span class="badge badge-active" style="font-size: 13px; padding: 6px 12px;">✓ Verified Doctor Account</span>
+            </div>
+
+            <div class="top-metrics-grid">
+              <div class="metric-box">
+                <div class="metric-box-lbl">Connected Patients</div>
+                <div class="metric-box-num">14</div>
+                <span style="font-size: 11px; color: #059669;">Active Consents</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Pending Record Requests</div>
+                <div class="metric-box-num">2</div>
+                <span style="font-size: 11px; color: #d97706;">Awaiting Approval</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Shared Medical Records</div>
+                <div class="metric-box-num">28</div>
+                <span style="font-size: 11px; color: var(--teal-700);">RLS Authorized</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Today's Activity</div>
+                <div class="metric-box-num">6</div>
+                <span style="font-size: 11px; color: #2563eb;">Consultations Reviewed</span>
+              </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin-bottom: 12px;">Consented Patients List</h3>
+            <div id="doctor-patients-container"></div>
+          </div>
+
+          <div id="doctor-tab-patients" class="doctor-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">My Patients (Consented Access Only)</h2>
+            <div id="doctor-patients-list-tab"></div>
+          </div>
+
+          <div id="doctor-tab-requests" class="doctor-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Record Requests Sent to Patients</h2>
+            <div id="doctor-requests-container"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div> <!-- End App Root -->
 
   <!-- ======================================================================
-       MODALS & OVERLAYS
+       SARVAM AI CONFIGURATION MODAL
        ====================================================================== -->
-
-  <!-- Scheme Details Modal (Screen 5) -->
-  <div id="scheme-details-modal" class="modal-overlay">
-    <div class="modal-card">
-      <button class="modal-close-btn" onclick="closeSchemeModal()">✕</button>
-      <div id="scheme-modal-body">
-        <!-- Dynamically rendered -->
+  <div id="sarvam-settings-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeSarvamSettingsModal()">✕</button>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+        <span style="font-size: 20px;">⚙️</span>
+        <h3 style="font-size: 18px; font-weight: 800;">Sarvam AI Speech-to-Text Settings</h3>
       </div>
-    </div>
-  </div>
-
-  <!-- OCR Scan Modal (Screen 8) -->
-  <div id="ocr-scan-modal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 500px; text-align: center;">
-      <div style="font-size: 42px; margin-bottom: 12px;">📄🔍</div>
-      <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Sanjeevani Smart OCR Scanner</h3>
-      <p id="ocr-scan-status-text" style="color: var(--text-secondary); font-size: 13.5px; margin-bottom: 20px;">
-        Uploading document to encrypted vault...
-      </p>
-      <div class="progress-bar-track" style="height: 8px; margin-bottom: 16px;">
-        <div id="ocr-scan-progress" class="progress-bar-fill" style="width: 25%;"></div>
-      </div>
-      <div style="font-size: 11px; color: var(--text-muted);">
-        🔒 256-bit Encrypted. Data processed locally in compliance with India Digital Personal Data Protection Act.
-      </div>
-    </div>
-  </div>
-
-  <!-- Admin Verification Workflow Modal (Screen 12) -->
-  <div id="admin-workflow-modal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 600px;">
-      <button class="modal-close-btn" onclick="closeAdminWorkflowModal()">✕</button>
-      <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 6px;">Source Verification Workflow</h3>
-      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
-        Verify official ministry notifications before updating citizen eligibility models.
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">
+        Configure Sarvam AI REST API endpoint (<code>https://api.sarvam.ai/speech-to-text</code>) for Indic language speech transcription.
       </p>
 
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-        <div style="display: flex; align-items: center; gap: 10px; background: #ecfdf5; padding: 12px; border-radius: 8px; border: 1px solid #a7f3d0;">
-          <span style="color: var(--primary-700); font-weight: 800;">✓</span>
-          <span style="font-size: 13.5px;"><strong>Step 1:</strong> Scheme Update Detected from Official Gazette</span>
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+        <div>
+          <label style="font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 4px;">Sarvam API Subscription Key (<code>api-subscription-key</code>):</label>
+          <input id="sarvam-api-key-input" type="password" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px; font-family: monospace; font-size: 13px;" placeholder="Enter your Sarvam AI API Key">
+          <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; display: block;">Saved securely in browser local storage for direct REST STT calls.</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; background: #ecfdf5; padding: 12px; border-radius: 8px; border: 1px solid #a7f3d0;">
-          <span style="color: var(--primary-700); font-weight: 800;">✓</span>
-          <span style="font-size: 13.5px;"><strong>Step 2:</strong> Review Official MoHFW / SHA Source Link</span>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 4px;">STT Model:</label>
+          <select id="sarvam-model-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 13px;">
+            <option value="saaras:v3" selected>saaras:v3 (Recommended - State of the Art)</option>
+            <option value="saaras:v4">saaras:v4 (Latest - 22 Indic Languages)</option>
+          </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; background: #eff6ff; padding: 12px; border-radius: 8px; border: 1px solid #bfdbfe;">
-          <span style="color: #2563eb; font-weight: 800;">●</span>
-          <span style="font-size: 13.5px;"><strong>Step 3:</strong> Verify Benefit & Income Criteria Changes</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-          <span style="color: var(--text-muted); font-weight: 800;">○</span>
-          <span style="font-size: 13.5px;"><strong>Step 4:</strong> Publish Live Update to Sanjeevani Registry</span>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 4px;">Transcription Mode:</label>
+          <select id="sarvam-mode-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 13px;">
+            <option value="transcribe" selected>transcribe (Standard Native Script)</option>
+            <option value="translate">translate (Translate Indic Speech to English)</option>
+            <option value="codemix">codemix (English words in Latin + Indic in Native)</option>
+            <option value="verbatim">verbatim (Exact Word-for-Word Transcription)</option>
+            <option value="translit">translit (Romanization / Latin Script Only)</option>
+          </select>
         </div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn btn-secondary" onclick="closeAdminWorkflowModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="publishAdminVerifiedScheme()">Approve & Publish Live</button>
+        <button class="btn btn-secondary btn-sm" onclick="closeSarvamSettingsModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSarvamSettings()">Save Settings</button>
       </div>
+    </div>
+  </div>
+
+  <!-- VOICE CONVERSATION MODE MODAL -->
+  <div id="voice-conversation-modal" class="modal-overlay">
+    <div class="voice-mode-modal-card">
+      <button class="modal-close-btn" style="color: white; background: rgba(255,255,255,0.2);" onclick="closeVoiceModeModal()">✕</button>
+
+      <div class="voice-mode-pulsing-avatar">
+        🩺
+      </div>
+
+      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 6px; color: white;">Sanjeevani Voice Assistant</h2>
+      <p id="voice-mode-status-text" style="font-size: 15px; color: #d1fae5; margin-bottom: 32px; min-height: 24px;">
+        Listening... (Powered by Sarvam AI saaras:v3)
+      </p>
+
+      <!-- Waveform Animation -->
+      <div style="display: flex; justify-content: center; align-items: center; gap: 6px; height: 36px; margin-bottom: 36px;">
+        <div class="wave-bar" style="background: white; height: 28px;"></div>
+        <div class="wave-bar" style="background: white; height: 42px;"></div>
+        <div class="wave-bar" style="background: white; height: 32px;"></div>
+        <div class="wave-bar" style="background: white; height: 50px;"></div>
+        <div class="wave-bar" style="background: white; height: 36px;"></div>
+        <div class="wave-bar" style="background: white; height: 24px;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 14px;">
+        <button class="btn btn-secondary" onclick="showToast('🎙️ Microphone unmuted')">
+          🎙️ Mute
+        </button>
+        <button class="btn btn-secondary" style="background: #dc2626; color: white; border-color: #dc2626;" onclick="closeVoiceModeModal()">
+          ⏹ End Voice Chat
+        </button>
+        <button class="btn btn-secondary" onclick="showToast('🔊 Speaker active')">
+          🔊 Speaker
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--text-main);">Welcome to Sanjeevani</h2>
+        <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 4px;">
+          Securely access your digital health ecosystem via Supabase Auth.
+        </p>
+      </div>
+
+      <!-- Role Selection Cards -->
+      <div style="font-size: 13px; font-weight: 700; text-align: center; color: var(--text-secondary);">
+        How are you using Sanjeevani?
+      </div>
+      <div class="auth-role-select-grid">
+        <div id="role-card-patient" class="role-card-select selected" onclick="selectAuthRole('patient')">
+          <div class="role-icon">🧑</div>
+          <h4>Patient</h4>
+          <p>Manage health records, voice chat & discover schemes.</p>
+        </div>
+        <div id="role-card-doctor" class="role-card-select" onclick="selectAuthRole('doctor')">
+          <div class="role-icon">👨‍⚕️</div>
+          <h4>Doctor</h4>
+          <p>Review consented records & manage patient consultations.</p>
+        </div>
+      </div>
+
+      <!-- Patient Auth Form -->
+      <div id="auth-form-patient">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Email Address</label>
+            <input id="patient-login-email" type="email" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="ayush.bhardwaj@email.com">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Password</label>
+            <input id="patient-login-pass" type="password" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="••••••••">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="handlePatientLogin()">
+          Login as Patient →
+        </button>
+
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px; font-size: 12px; text-align: center; color: var(--primary-900);">
+          ⚡ <strong>Evaluator Quick Test:</strong> Pre-filled with Ayush Bhardwaj (Patient Account)
+        </div>
+      </div>
+
+      <!-- Doctor Auth Form -->
+      <div id="auth-form-doctor" style="display: none;">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Doctor Email Address</label>
+            <input id="doctor-login-email" type="email" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="dr.sharma@sanjeevani.in">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Password</label>
+            <input id="doctor-login-pass" type="password" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="••••••••">
+          </div>
+        </div>
+
+        <button class="btn btn-teal" style="width: 100%; margin-bottom: 12px;" onclick="handleDoctorLogin()">
+          Login as Doctor 👨‍⚕️
+        </button>
+
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; font-size: 12px; text-align: center; color: #1e40af;">
+          ⚡ <strong>Evaluator Quick Test:</strong> Pre-filled with Dr. H. S. Sharma (Cardiologist)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Patient Detail Modal -->
+  <div id="doctor-patient-detail-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeDoctorPatientDetailModal()">✕</button>
+      <div id="doctor-patient-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- Doctor Request Records Modal -->
+  <div id="doctor-request-records-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeRequestRecordsModal()">✕</button>
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Request Additional Medical Records</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Send a notification to the patient requesting permission to view additional records.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; margin-bottom: 16px;">
+        <label><input type="checkbox" checked> Previous Prescriptions</label>
+        <label><input type="checkbox" checked> Historical Blood Reports</label>
+        <label><input type="checkbox"> Imaging / X-Ray Scans</label>
+        <label><input type="checkbox"> Full Medical History</label>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 12.5px; font-weight: 700;">Reason for Consultation Request:</label>
+        <input id="doctor-req-reason" type="text" style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid var(--border-subtle); border-radius: 6px;" value="Required for annual cardiac & diabetes evaluation">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-secondary btn-sm" onclick="closeRequestRecordsModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="submitDoctorRecordRequest()">Send Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scheme Details Modal -->
+  <div id="scheme-details-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeSchemeModal()">✕</button>
+      <div id="scheme-modal-body"></div>
     </div>
   </div>
 
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- Script Imports -->
+  <!-- Scripts -->
   <script src="js/data.js"></script>
+  <script src="js/supabase.js"></script>
   <script src="js/translations.js"></script>
   <script src="js/ai-assistant.js"></script>
   <script src="js/app.js"></script>
