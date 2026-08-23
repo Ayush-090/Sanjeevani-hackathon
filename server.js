@@ -16,9 +16,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SARVAM_API_KEY = process.env.SARVAM_API_KEY || 'sk_g102nzcd_JtWlroEVMXmr3zdoNdpM7xbi';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rwuaxjifvwrylehwmvxd.supabase.co';
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_publishable_9tH6kDfvUTb-jjyyhp89DQ_4EjsLT-6';
 
 // Initialize Supabase Client
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
