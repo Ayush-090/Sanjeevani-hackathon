@@ -31,10 +31,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Serve static frontend files
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  const publicIndexPath = path.join(__dirname, 'public', 'index.html');
+  res.sendFile(publicIndexPath);
 });
 
 /**

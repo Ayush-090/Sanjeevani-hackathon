@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanjeevani — Unified Digital Health & Sarvam AI Voice Assistant</title>
+  <meta name="description" content="Manage your digital health records, doctor consultations, and talk to Sanjeevani AI powered by Sarvam AI Indic Speech-to-Text in 22 Indian languages.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 2v20M2 12h20'/></svg>">
+</head>
+<body>
+
+  <!-- App Root Wrapper -->
+  <div id="app-root-container">
+
+    <!-- Global Header -->
+    <header class="site-header">
+      <div class="container header-inner">
+        <!-- Logo -->
+        <div class="brand-group" onclick="routeToLandingPage()">
+          <div class="brand-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
+          </div>
+          <div>
+            <div class="brand-name">Sanjeevani</div>
+            <div class="brand-subtext">Digital Health & Schemes</div>
+          </div>
+        </div>
+
+        <!-- 1. Public Nav Links (When Unauthenticated) -->
+        <nav id="public-nav-links" class="main-nav">
+          <a href="#" class="nav-link" onclick="routeToLandingPage(); return false;">Home</a>
+          <a href="#how-it-works" class="nav-link">How It Works</a>
+          <a href="#for-doctors" class="nav-link">For Doctors</a>
+          <a href="#" class="nav-link" onclick="openAuthModal('patient'); return false;">AI Voice Assistant</a>
+        </nav>
+
+        <!-- 2. Patient Nav Links (When Logged in as Patient) -->
+        <nav id="patient-nav-links" class="main-nav" style="display: none;">
+          <a href="#" class="nav-link" onclick="switchPatientTab('overview'); return false;">Overview</a>
+          <a href="#" class="nav-link" onclick="switchPatientTab('health'); return false;">My Health</a>
+          <a href="#" class="nav-link" onclick="switchPatientTab('records'); return false;">Medical Records</a>
+          <a href="#" class="nav-link" onclick="switchPatientTab('doctors'); return false;">Doctors</a>
+          <a href="#" class="nav-link" style="color: var(--teal-900); font-weight: 800;" onclick="switchPatientTab('schemes'); return false;">🏛️ Gov Schemes</a>
+          <a href="#" class="nav-link active" onclick="switchPatientTab('ai'); return false;">🤖 AI Voice Chat</a>
+        </nav>
+
+        <!-- 3. Doctor Nav Links (When Logged in as Doctor) -->
+        <nav id="doctor-nav-links" class="main-nav" style="display: none;">
+          <a href="#" class="nav-link active" onclick="switchDoctorTab('overview'); return false;">Overview</a>
+          <a href="#" class="nav-link" onclick="switchDoctorTab('patients'); return false;">My Patients</a>
+          <a href="#" class="nav-link" onclick="switchDoctorTab('requests'); return false;">Record Requests</a>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Public Login / Get Started -->
+          <div id="nav-login-btn">
+            <button class="btn btn-secondary btn-sm" onclick="openAuthModal('patient')">Login</button>
+            <button class="btn btn-primary btn-sm" onclick="openAuthModal('patient')">Get Started</button>
+          </div>
+
+          <!-- Authenticated User Profile Pill -->
+          <div id="nav-user-pill" class="user-profile-pill" style="display: none;">
+            <div class="user-avatar" id="nav-user-avatar">AB</div>
+            <div style="display: flex; flex-direction: column;">
+              <span id="nav-user-pill-name" style="font-size: 12.5px; font-weight: 700;">Ayush (58)</span>
+              <span id="nav-user-pill-tag" style="font-size: 10px; color: var(--teal-700);">Patient Account</span>
+            </div>
+            <button style="margin-left: 8px; font-size: 11px; color: #dc2626; font-weight: 700;" onclick="handleLogout()" title="Sign Out">Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         SCREEN 1: PUBLIC LANDING PAGE
+         ====================================================================== -->
+    <section id="screen-landing" class="view-screen active-screen">
+      <div class="public-hero">
+        <div class="container">
+          <span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; margin-bottom: 12px;">
+            🌿 Sarvam AI Indic Speech + Unified Healthcare & Government Scheme Ecosystem
+          </span>
+          <h1 class="public-hero-title">
+            Your healthcare. Your benefits. <span>One intelligent platform.</span>
+          </h1>
+          <p class="public-hero-sub">
+            Sanjeevani is your digital health companion. Manage clinical records, talk to Sanjeevani AI powered by Sarvam AI Indic Speech in 22 languages, and discover eligible government medical schemes with 1-click voice chat.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-lg" onclick="openAuthModal('patient')">
+              Get Started as Patient →
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="openAuthModal('doctor')">
+              Join as Doctor 👨‍⚕️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- How It Works (4 Steps) -->
+        <div id="how-it-works" style="padding-top: 48px;">
+          <h2 style="font-size: 26px; text-align: center; margin-bottom: 8px;">How Sanjeevani Works</h2>
+          <p style="text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 32px;">
+            A complete, Sarvam AI voice-enabled healthcare ecosystem for Indian citizens.
+          </p>
+
+          <div class="how-it-works-grid">
+            <div class="how-step-card">
+              <div class="how-step-num">01</div>
+              <div class="how-step-title">Create Secure Profile</div>
+              <p class="how-step-desc">Register securely with Supabase Auth, link your ABHA ID, and manage your health records.</p>
+            </div>
+
+            <div class="how-step-card">
+              <div class="how-step-num">02</div>
+              <div class="how-step-title">Sarvam AI Speech Chat</div>
+              <p class="how-step-desc">Speak naturally in Hindi, Punjabi, Bengali or 22 Indic languages transcribed via Sarvam AI saaras:v3.</p>
+            </div>
+
+            <div class="how-step-card">
+              <div class="how-step-num">03</div>
+              <div class="how-step-title">Discover Government Schemes</div>
+              <p class="how-step-desc">Get matched with Ayushman Bharat PM-JAY, State Sehat Bima, and Janaushadhi based on existing vitals.</p>
+            </div>
+
+            <div class="how-step-card">
+              <div class="how-step-num">04</div>
+              <div class="how-step-title">Share with Doctors via Consent</div>
+              <p class="how-step-desc">Grant time-bound, granular access to specific lab tests with consulting doctors, with 1-click revocation.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role-Based CTA Cards -->
+        <div class="role-cta-grid">
+          <div class="role-cta-card patient-theme">
+            <div>
+              <span class="badge badge-active" style="margin-bottom: 10px;">For Patients</span>
+              <h3 style="font-size: 22px; margin-bottom: 8px;">Take Control of Your Digital Health Journey</h3>
+              <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                Manage records, talk to Sanjeevani Voice AI, discover eligible government health assurance up to ₹5 Lakh/year, and consult doctors securely.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="openAuthModal('patient')">
+              Get Started as Patient →
+            </button>
+          </div>
+
+          <div class="role-cta-card doctor-theme" id="for-doctors">
+            <div>
+              <span class="badge" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; margin-bottom: 10px;">For Doctors</span>
+              <h3 style="font-size: 22px; margin-bottom: 8px;">Access Consented Patient Records Securely</h3>
+              <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                Review diagnostic panels authorized by patients under Row Level Security (RLS), request additional reports, and provide clinical guidance.
+              </p>
+            </div>
+            <button class="btn btn-teal" onclick="openAuthModal('doctor')">
+              Join as Doctor 👨‍⚕️
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 2: PATIENT DASHBOARD (Role: Patient)
+         ====================================================================== -->
+    <section id="screen-patient-dashboard" class="view-screen">
+      <div class="container dashboard-layout">
+        <!-- Patient Sidebar -->
+        <aside class="dashboard-sidebar">
+          <div>
+            <div style="padding: 10px 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+              <div style="font-size: 11px; font-weight: 800; color: var(--primary-800); text-transform: uppercase;">Patient Portal</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Ayush Bhardwaj</div>
+            </div>
+            <div class="sidebar-nav-list">
+              <div class="sidebar-link patient-sidebar-link" data-tab="overview" onclick="switchPatientTab('overview')">
+                <span>📊 Overview</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link active" data-tab="ai" onclick="switchPatientTab('ai')">
+                <span>🤖 AI Voice Chat (Sarvam AI)</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="schemes" onclick="switchPatientTab('schemes')">
+                <span>🏛️ Government Schemes</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="health" onclick="switchPatientTab('health')">
+                <span>🩺 My Health</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="records" onclick="switchPatientTab('records')">
+                <span>📁 Medical Records</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="docs" onclick="switchPatientTab('docs')">
+                <span>📄 Document Vault</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="doctors" onclick="switchPatientTab('doctors')">
+                <span>👨‍⚕️ My Doctors</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="applications" onclick="switchPatientTab('applications')">
+                <span>📑 Applications Tracker</span>
+              </div>
+              <div class="sidebar-link patient-sidebar-link" data-tab="consents" onclick="switchPatientTab('consents')">
+                <span>🔐 Consent & Sharing</span>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+            <div class="sidebar-link" onclick="handleLogout()" style="color: #dc2626;">
+              <span>🚪 Sign Out</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Patient Tab Contents -->
+        <div style="flex: 1;">
+
+          <!-- ================================================================
+               WHATSAPP-STYLE SANJEEVANI AI VOICE CHAT (SARVAM AI INTEGRATION)
+               ================================================================ -->
+          <div id="patient-tab-ai" class="patient-tab-content">
+            <div class="whatsapp-chat-container">
+
+              <!-- 1. Left Conversation History Sidebar -->
+              <aside class="chat-history-sidebar">
+                <div>
+                  <div class="sidebar-threads-header">
+                    <button class="new-chat-btn" onclick="createNewChatThread()">
+                      <span>+ New Chat</span>
+                    </button>
+                    <input type="text" class="thread-search-input" placeholder="Search conversations...">
+                  </div>
+
+                  <div id="threads-scroll-container" class="threads-scroll-list">
+                    <!-- Dynamically populated threads -->
+                  </div>
+                </div>
+
+                <div style="padding: 12px; border-top: 1px solid var(--border-subtle); font-size: 11.5px; color: var(--text-muted); text-align: center;">
+                  🇮🇳 Powered by Sarvam AI Indic STT
+                </div>
+              </aside>
+
+              <!-- 2. Main Chat Area -->
+              <div class="chat-main-area">
+
+                <!-- WhatsApp-Style Chat Header -->
+                <div class="wa-chat-header">
+                  <div class="wa-header-left">
+                    <div class="wa-avatar">🩺</div>
+                    <div class="wa-header-info">
+                      <h3>Sanjeevani AI</h3>
+                      <span class="wa-connected-status">
+                        <span class="badge-dot" style="background: #22c55e;"></span>
+                        Health Profile Connected
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Header Controls: Voice Mode, Language, Sarvam Settings, Speaker -->
+                  <div class="wa-header-actions">
+                    <select class="wa-lang-select" aria-label="Select Language" onchange="window.appState.currentLanguage = this.value">
+                      <option value="hi">हिन्दी (Hindi)</option>
+                      <option value="en">English</option>
+                      <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                      <option value="bn">বাংলা (Bengali)</option>
+                      <option value="gu">ગુજરાતી (Gujarati)</option>
+                      <option value="mr">मराठी (Marathi)</option>
+                      <option value="ta">தமிழ் (Tamil)</option>
+                      <option value="te">తెలుగు (Telugu)</option>
+                      <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                      <option value="ml">മലയാളം (Malayalam)</option>
+                      <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                      <option value="as">অসমীয়া (Assamese)</option>
+                    </select>
+
+                    <button class="wa-icon-btn" onclick="openVoiceModeModal()" title="Start Voice Conversation Mode">
+                      <span>🎙️ Voice Chat</span>
+                    </button>
+
+                    <button class="wa-icon-btn" onclick="openSarvamSettingsModal()" title="Configure Sarvam AI API Key & Model">
+                      <span>⚙️ Sarvam AI</span>
+                    </button>
+
+                    <button class="wa-icon-btn" onclick="showToast('🔊 Master Audio is ON')" title="Speaker Audio Settings">
+                      <span>🔊</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Messages Feed -->
+                <div id="wa-messages-feed-container" class="wa-messages-feed">
+                  <!-- Dynamically populated WhatsApp bubbles -->
+                </div>
+
+                <!-- AI Thinking Indicator -->
+                <div id="wa-thinking-indicator" class="wa-thinking-indicator" style="display: none; margin: 0 24px 8px;">
+                  <div style="font-size: 12px; font-weight: 800; color: var(--primary-900);">Sanjeevani is checking...</div>
+                  <div class="wa-thinking-step">
+                    <span style="color: var(--primary-600);">✓</span>
+                    <span id="wa-thinking-step-text">Sarvam AI transcribing speech & matching health profile...</span>
+                  </div>
+                </div>
+
+                <!-- Message Composer with Voice Recording Waveform -->
+                <div class="wa-composer-bar">
+                  <!-- Attachment Popup Menu -->
+                  <div id="wa-attachment-popup" class="wa-attachment-popup">
+                    <div class="attachment-option-item" onclick="handleAttachmentOption('Medical Lab Report')">
+                      <span>📄</span> Upload Medical Report
+                    </div>
+                    <div class="attachment-option-item" onclick="handleAttachmentOption('Document Capture')">
+                      <span>📷</span> Capture Document (Camera)
+                    </div>
+                    <div class="attachment-option-item" onclick="handleAttachmentOption('Prescription Slip')">
+                      <span>📎</span> Upload Prescription / File
+                    </div>
+                  </div>
+
+                  <!-- [+] Attachment Button -->
+                  <button class="wa-attachment-btn" onclick="toggleAttachmentMenu()" title="Attach Document">+</button>
+
+                  <!-- Main Input Field -->
+                  <input id="wa-main-chat-input" type="text" class="wa-input-field" placeholder="Type or speak (e.g. 'Mere liye koi government scheme hai?')" autocomplete="off">
+
+                  <!-- [🎙️] Microphone Button (Sarvam AI) -->
+                  <button class="wa-mic-btn" onclick="toggleVoiceRecording()" title="Hold/Tap to Speak via Sarvam AI">
+                    <span>🎙️</span>
+                  </button>
+
+                  <!-- [➤] Send Button -->
+                  <button class="wa-send-btn" onclick="sendUserChatMessage()" title="Send Message">
+                    <span>➤</span>
+                  </button>
+
+                  <!-- In-Composer Voice Recording Overlay -->
+                  <div id="wa-recording-overlay" class="wa-recording-overlay" style="display: none;">
+                    <div class="waveform-anim-box">
+                      <span style="font-size: 18px; margin-right: 4px;">🎙️</span>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                    </div>
+
+                    <div id="recording-transcription-preview" class="recording-transcription-preview">
+                      Recording speech for Sarvam AI... (Speak in Hindi, English, Punjabi)
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                      <button class="btn btn-secondary btn-sm" onclick="cancelVoiceRecording()">Cancel</button>
+                      <button class="btn btn-primary btn-sm" onclick="confirmSendVoiceRecording()">✓ Send</button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 1. Patient Overview Tab -->
+          <div id="patient-tab-overview" class="patient-tab-content" style="display: none;">
+            <div style="margin-bottom: 20px;">
+              <h2 style="font-size: 26px; font-weight: 800;">Good morning, Ayush</h2>
+              <p style="color: var(--text-muted); font-size: 14px;">Here is your unified health and government schemes overview.</p>
+            </div>
+
+            <div class="top-metrics-grid">
+              <div class="metric-box">
+                <div class="metric-box-lbl">Health Profile</div>
+                <div class="metric-box-num">95%</div>
+                <span style="font-size: 11px; color: #059669;">Verified (ABHA Active)</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Medical Records</div>
+                <div class="metric-box-num">4</div>
+                <span style="font-size: 11px; color: var(--teal-700);">Encrypted in Vault</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Doctor Connections</div>
+                <div class="metric-box-num">1</div>
+                <span style="font-size: 11px; color: #2563eb;">Dr. H. S. Sharma (Active)</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Relevant Schemes</div>
+                <div class="metric-box-num">5</div>
+                <span style="font-size: 11px; color: #059669;">96% Top Match (PM-JAY)</span>
+              </div>
+            </div>
+
+            <!-- Government Scheme Integration Card -->
+            <div class="gov-scheme-home-card" style="margin-bottom: 24px;">
+              <div>
+                <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: 8px;">
+                  3 schemes may be relevant to you
+                </span>
+                <h2>Government Health Schemes</h2>
+                <p>Matched to your diagnosed conditions (Type 2 Diabetes, Hypertension) and Punjab residence.</p>
+                <div style="margin-top: 14px; display: flex; gap: 10px;">
+                  <button class="btn btn-secondary" onclick="switchPatientTab('schemes')">Explore Schemes →</button>
+                  <button class="btn btn-teal" onclick="switchPatientTab('ai')">Talk with Sarvam Voice AI 🎙️</button>
+                </div>
+              </div>
+              <div style="text-align: center; background: rgba(255,255,255,0.15); padding: 16px; border-radius: 12px; min-width: 130px;">
+                <div style="font-size: 32px; font-weight: 800; color: #a7f3d0;">96%</div>
+                <div style="font-size: 12px; color: white;">PM-JAY Match</div>
+              </div>
+            </div>
+
+            <!-- Health Snapshot -->
+            <h3 style="font-size: 18px; margin-bottom: 12px;">Health Snapshot</h3>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">Blood Pressure</div>
+                <div id="vital-bp" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">138/88 mmHg</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">Fasting Blood Sugar</div>
+                <div id="vital-sugar" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">142 mg/dL</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">HbA1c</div>
+                <div id="vital-hba1c" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">7.4%</div>
+              </div>
+              <div style="background: white; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11.5px; color: var(--text-muted);">BMI</div>
+                <div id="vital-bmi" style="font-size: 18px; font-weight: 800; color: var(--primary-900);">24.6</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Patient Tabs -->
+          <div id="patient-tab-health" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">My Health & Clinical Parameters</h2>
+            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+              <div><strong>Chronic Conditions:</strong> Type 2 Diabetes Mellitus, Stage 1 Hypertension</div>
+              <div style="margin-top: 8px;"><strong>Active Medications:</strong> Metformin 500mg, Telmisartan 40mg, Atorvastatin 10mg</div>
+            </div>
+          </div>
+
+          <div id="patient-tab-records" class="patient-tab-content" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h2 style="font-size: 22px;">Medical Records Vault</h2>
+              <button class="btn btn-primary btn-sm" onclick="showToast('Upload encrypted record...')">+ Upload Record</button>
+            </div>
+            <div id="records-grid-container" class="records-grid"></div>
+          </div>
+
+          <div id="patient-tab-docs" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Document Vault (OCR Enabled)</h2>
+            <div id="documents-grid-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;"></div>
+          </div>
+
+          <div id="patient-tab-doctors" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">My Doctors & Consent Sharing</h2>
+            <div id="doctors-grid-container" class="doctors-grid"></div>
+          </div>
+
+          <div id="patient-tab-schemes" class="patient-tab-content" style="display: none;">
+            <div class="discovery-wizard-wrap">
+              <div id="discovery-step-1">
+                <span class="wizard-badge">Step 1 of 4</span>
+                <h2 style="font-size: 20px; margin: 8px 0;">Find Government Health Schemes</h2>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                  Sanjeevani will cross-reference your health profile against Central & State registries.
+                </p>
+                <button class="btn btn-primary" onclick="setDiscoveryStep(2)">Find Schemes For Me →</button>
+              </div>
+
+              <div id="discovery-step-2" style="display: none;">
+                <span class="wizard-badge">Step 2 of 4</span>
+                <h2 style="font-size: 20px; margin: 8px 0;">Use Existing Health Profile</h2>
+                <div class="profile-summary-matrix">
+                  <div class="matrix-field"><span class="matrix-field-lbl">Age</span><span class="matrix-field-val">58 Yrs • Male</span></div>
+                  <div class="matrix-field"><span class="matrix-field-lbl">Location</span><span class="matrix-field-val">Punjab (Ludhiana)</span></div>
+                  <div class="matrix-field"><span class="matrix-field-lbl">Income</span><span class="matrix-field-val">₹2.5 Lakh / Year</span></div>
+                  <div class="matrix-field"><span class="matrix-field-lbl">Conditions</span><span class="matrix-field-val">Diabetes & HTN</span></div>
+                </div>
+                <button class="btn btn-primary" onclick="setDiscoveryStep(3)">Confirm & Continue →</button>
+              </div>
+
+              <div id="discovery-step-3" style="display: none; text-align: center; padding: 24px 0;">
+                <h3 style="font-size: 18px; margin-bottom: 6px;">AI Matching Engine</h3>
+                <p id="wizard-match-status-text" style="color: var(--text-secondary); font-size: 13px;">Analyzing criteria...</p>
+                <div style="max-width: 380px; margin: 12px auto; height: 6px; background: #d1fae5; border-radius: 99px; overflow: hidden;">
+                  <div id="wizard-match-progress-bar" style="width: 25%; height: 100%; background: var(--primary-600);"></div>
+                </div>
+              </div>
+
+              <div id="discovery-step-4" style="display: none;">
+                <h2 style="font-size: 20px; margin-bottom: 12px;">Schemes Relevant To You</h2>
+              </div>
+            </div>
+
+            <div id="schemes-grid-container" class="schemes-grid"></div>
+          </div>
+
+          <div id="patient-tab-applications" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Government Health Card Applications</h2>
+            <div id="applications-list-container"></div>
+          </div>
+
+          <div id="patient-tab-consents" class="patient-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Consent & Data Sharing Manager</h2>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin-bottom: 20px;">Manage active data permissions granted to medical doctors.</p>
+            <div id="active-consents-container"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SCREEN 3: DOCTOR DASHBOARD (Role: Doctor)
+         ====================================================================== -->
+    <section id="screen-doctor-dashboard" class="view-screen">
+      <div class="container dashboard-layout">
+        <!-- Doctor Sidebar -->
+        <aside class="dashboard-sidebar">
+          <div>
+            <div style="padding: 10px 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+              <div style="font-size: 11px; font-weight: 800; color: var(--teal-700); text-transform: uppercase;">Doctor Portal</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Dr. H. S. Sharma</div>
+              <span class="badge badge-active" style="margin-top: 4px;">✓ Verified Doctor</span>
+            </div>
+            <div class="sidebar-nav-list">
+              <div class="sidebar-link doctor-sidebar-link active" data-tab="overview" onclick="switchDoctorTab('overview')">
+                <span>📊 Overview</span>
+              </div>
+              <div class="sidebar-link doctor-sidebar-link" data-tab="patients" onclick="switchDoctorTab('patients')">
+                <span>👥 My Patients</span>
+              </div>
+              <div class="sidebar-link doctor-sidebar-link" data-tab="requests" onclick="switchDoctorTab('requests')">
+                <span>📋 Record Requests</span>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+            <div class="sidebar-link" onclick="handleLogout()" style="color: #dc2626;">
+              <span>🚪 Sign Out</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Doctor Contents -->
+        <div style="flex: 1;">
+          <div id="doctor-tab-overview" class="doctor-tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+              <div>
+                <h2 style="font-size: 26px; font-weight: 800;">Good morning, Dr. Sharma</h2>
+                <p style="color: var(--text-muted); font-size: 14px;">Senior Consultant Cardiologist • District Civil Hospital Ludhiana</p>
+              </div>
+              <span class="badge badge-active" style="font-size: 13px; padding: 6px 12px;">✓ Verified Doctor Account</span>
+            </div>
+
+            <div class="top-metrics-grid">
+              <div class="metric-box">
+                <div class="metric-box-lbl">Connected Patients</div>
+                <div class="metric-box-num">14</div>
+                <span style="font-size: 11px; color: #059669;">Active Consents</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Pending Record Requests</div>
+                <div class="metric-box-num">2</div>
+                <span style="font-size: 11px; color: #d97706;">Awaiting Approval</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Shared Medical Records</div>
+                <div class="metric-box-num">28</div>
+                <span style="font-size: 11px; color: var(--teal-700);">RLS Authorized</span>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-lbl">Today's Activity</div>
+                <div class="metric-box-num">6</div>
+                <span style="font-size: 11px; color: #2563eb;">Consultations Reviewed</span>
+              </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin-bottom: 12px;">Consented Patients List</h3>
+            <div id="doctor-patients-container"></div>
+          </div>
+
+          <div id="doctor-tab-patients" class="doctor-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">My Patients (Consented Access Only)</h2>
+            <div id="doctor-patients-list-tab"></div>
+          </div>
+
+          <div id="doctor-tab-requests" class="doctor-tab-content" style="display: none;">
+            <h2 style="font-size: 22px; margin-bottom: 16px;">Record Requests Sent to Patients</h2>
+            <div id="doctor-requests-container"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div> <!-- End App Root -->
+
+  <!-- ======================================================================
+       SARVAM AI CONFIGURATION MODAL
+       ====================================================================== -->
+  <div id="sarvam-settings-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeSarvamSettingsModal()">✕</button>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+        <span style="font-size: 20px;">⚙️</span>
+        <h3 style="font-size: 18px; font-weight: 800;">Sarvam AI Speech-to-Text Settings</h3>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">
+        Configure Sarvam AI REST API endpoint (<code>https://api.sarvam.ai/speech-to-text</code>) for Indic language speech transcription.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+        <div>
+          <label style="font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 4px;">Sarvam API Subscription Key (<code>api-subscription-key</code>):</label>
+          <input id="sarvam-api-key-input" type="password" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px; font-family: monospace; font-size: 13px;" placeholder="Enter your Sarvam AI API Key">
+          <span style="font-size: 11px; color: var(--text-muted); margin-top: 2px; display: block;">Saved securely in browser local storage for direct REST STT calls.</span>
+        </div>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 4px;">STT Model:</label>
+          <select id="sarvam-model-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 13px;">
+            <option value="saaras:v3" selected>saaras:v3 (Recommended - State of the Art)</option>
+            <option value="saaras:v4">saaras:v4 (Latest - 22 Indic Languages)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 700; display: block; margin-bottom: 4px;">Transcription Mode:</label>
+          <select id="sarvam-mode-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 13px;">
+            <option value="transcribe" selected>transcribe (Standard Native Script)</option>
+            <option value="translate">translate (Translate Indic Speech to English)</option>
+            <option value="codemix">codemix (English words in Latin + Indic in Native)</option>
+            <option value="verbatim">verbatim (Exact Word-for-Word Transcription)</option>
+            <option value="translit">translit (Romanization / Latin Script Only)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-secondary btn-sm" onclick="closeSarvamSettingsModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSarvamSettings()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICE CONVERSATION MODE MODAL -->
+  <div id="voice-conversation-modal" class="modal-overlay">
+    <div class="voice-mode-modal-card">
+      <button class="modal-close-btn" style="color: white; background: rgba(255,255,255,0.2);" onclick="closeVoiceModeModal()">✕</button>
+
+      <div class="voice-mode-pulsing-avatar">
+        🩺
+      </div>
+
+      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 6px; color: white;">Sanjeevani Voice Assistant</h2>
+      <p id="voice-mode-status-text" style="font-size: 15px; color: #d1fae5; margin-bottom: 32px; min-height: 24px;">
+        Listening... (Powered by Sarvam AI saaras:v3)
+      </p>
+
+      <!-- Waveform Animation -->
+      <div style="display: flex; justify-content: center; align-items: center; gap: 6px; height: 36px; margin-bottom: 36px;">
+        <div class="wave-bar" style="background: white; height: 28px;"></div>
+        <div class="wave-bar" style="background: white; height: 42px;"></div>
+        <div class="wave-bar" style="background: white; height: 32px;"></div>
+        <div class="wave-bar" style="background: white; height: 50px;"></div>
+        <div class="wave-bar" style="background: white; height: 36px;"></div>
+        <div class="wave-bar" style="background: white; height: 24px;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 14px;">
+        <button class="btn btn-secondary" onclick="showToast('🎙️ Microphone unmuted')">
+          🎙️ Mute
+        </button>
+        <button class="btn btn-secondary" style="background: #dc2626; color: white; border-color: #dc2626;" onclick="closeVoiceModeModal()">
+          ⏹ End Voice Chat
+        </button>
+        <button class="btn btn-secondary" onclick="showToast('🔊 Speaker active')">
+          🔊 Speaker
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--text-main);">Welcome to Sanjeevani</h2>
+        <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 4px;">
+          Securely access your digital health ecosystem via Supabase Auth.
+        </p>
+      </div>
+
+      <!-- Role Selection Cards -->
+      <div style="font-size: 13px; font-weight: 700; text-align: center; color: var(--text-secondary);">
+        How are you using Sanjeevani?
+      </div>
+      <div class="auth-role-select-grid">
+        <div id="role-card-patient" class="role-card-select selected" onclick="selectAuthRole('patient')">
+          <div class="role-icon">🧑</div>
+          <h4>Patient</h4>
+          <p>Manage health records, voice chat & discover schemes.</p>
+        </div>
+        <div id="role-card-doctor" class="role-card-select" onclick="selectAuthRole('doctor')">
+          <div class="role-icon">👨‍⚕️</div>
+          <h4>Doctor</h4>
+          <p>Review consented records & manage patient consultations.</p>
+        </div>
+      </div>
+
+      <!-- Patient Auth Form -->
+      <div id="auth-form-patient">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Email Address</label>
+            <input id="patient-login-email" type="email" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="ayush.bhardwaj@email.com">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Password</label>
+            <input id="patient-login-pass" type="password" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="••••••••">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="handlePatientLogin()">
+          Login as Patient →
+        </button>
+
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px; font-size: 12px; text-align: center; color: var(--primary-900);">
+          ⚡ <strong>Evaluator Quick Test:</strong> Pre-filled with Ayush Bhardwaj (Patient Account)
+        </div>
+      </div>
+
+      <!-- Doctor Auth Form -->
+      <div id="auth-form-doctor" style="display: none;">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Doctor Email Address</label>
+            <input id="doctor-login-email" type="email" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="dr.sharma@sanjeevani.in">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 700;">Password</label>
+            <input id="doctor-login-pass" type="password" style="width: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: 8px;" value="••••••••">
+          </div>
+        </div>
+
+        <button class="btn btn-teal" style="width: 100%; margin-bottom: 12px;" onclick="handleDoctorLogin()">
+          Login as Doctor 👨‍⚕️
+        </button>
+
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; font-size: 12px; text-align: center; color: #1e40af;">
+          ⚡ <strong>Evaluator Quick Test:</strong> Pre-filled with Dr. H. S. Sharma (Cardiologist)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Patient Detail Modal -->
+  <div id="doctor-patient-detail-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeDoctorPatientDetailModal()">✕</button>
+      <div id="doctor-patient-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- Doctor Request Records Modal -->
+  <div id="doctor-request-records-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeRequestRecordsModal()">✕</button>
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Request Additional Medical Records</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Send a notification to the patient requesting permission to view additional records.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; margin-bottom: 16px;">
+        <label><input type="checkbox" checked> Previous Prescriptions</label>
+        <label><input type="checkbox" checked> Historical Blood Reports</label>
+        <label><input type="checkbox"> Imaging / X-Ray Scans</label>
+        <label><input type="checkbox"> Full Medical History</label>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 12.5px; font-weight: 700;">Reason for Consultation Request:</label>
+        <input id="doctor-req-reason" type="text" style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid var(--border-subtle); border-radius: 6px;" value="Required for annual cardiac & diabetes evaluation">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-secondary btn-sm" onclick="closeRequestRecordsModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="submitDoctorRecordRequest()">Send Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scheme Details Modal -->
+  <div id="scheme-details-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeSchemeModal()">✕</button>
+      <div id="scheme-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/data.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/translations.js"></script>
+  <script src="/js/ai-assistant.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
